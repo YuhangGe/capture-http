@@ -1,0 +1,62 @@
+.root-app > .main > .record-list {
+  width: 30vw;
+  border-right: 1px solid #f2f2f2;
+  overflow: auto;
+
+  > li {
+    padding: 12px;
+    cursor: pointer;
+
+    &.active,
+    &:hover {
+      background: #f8f8f8;
+      cursor: default;
+    }
+
+    > .title {
+      font-size: 18px;
+      display: flex;
+      margin-bottom: 8px;
+
+      > span.method {
+        color: #666;
+        margin-right: 4px;
+      }
+
+      > span.url {
+        flex: 1;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+    }
+
+    > .info {
+      display: flex;
+      font-size: 14px;
+      color: #888;
+
+      > .time {
+        flex: 1;
+      }
+
+      > .error {
+        color: #a80000;
+      }
+
+      > .pending {
+        font-size: 12px;
+        color: #888;
+      }
+
+      > .status {
+        margin-left: 8px;
+        color: #107c10;
+
+        &.error {
+          color: #a80000;
+        }
+      }
+    }
+  }
+}

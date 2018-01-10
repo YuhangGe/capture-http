@@ -1,0 +1,53 @@
+html,
+body,
+#react-root-app,
+.root-app {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', SimSun, sans-serif;
+}
+
+ul,
+li,
+div,
+p {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style: none;
+}
+
+.root-app {
+  display: flex;
+  flex-direction: column;
+
+  > .main {
+    flex: 1;
+    display: flex;
+
+    &.empty {
+      display: block;
+      padding-top: 120px;
+
+      > p {
+        font-size: 26px;
+        text-align: center;
+        color: #888;
+        flex: 1;
+
+        a {
+          color: #0078d7;
+          text-decoration: none;
+        }
+      }
+    }
+  }
+}
+
+@import './toolbar.less';
+@import './list.less';
+@import './content.less';

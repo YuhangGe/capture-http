@@ -1,0 +1,95 @@
+/* eslint-env node */
+const electron = require('electron');
+// Module to control application life.
+const app = electron.app;
+const Menu = electron.Menu;
+// Module to create native browser window.
+const BrowserWindow = electron.BrowserWindow;
+
+const path = require('path');
+const url = require('url');
+
+// Keep a global reference of the window object, if you don't, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+let mainWindow = null;
+
+function createWindow () {
+  // Create the browser window.
+  mainWindow = new BrowserWindow({
+    width: 1000, 
+    height: 700
+  });
+
+  // and load the index.html of the app.
+  mainWindow.loadURL(url.format({
+    pathname: path.resolve(__dirname, '../.tmp/index.html'),
+    protocol: 'file:',
+    slashes: true
+  }));
+
+  // Open the DevTools.
+  // 
+
+  // Emitted when the window is closed.
+  mainWindow.on('closed', function () {
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    mainWindow = null;
+  });
+}
+
+app.on('ready', initialize);
+app.on('window-all-closed', function () {
+  app.quit();
+});
+
+function initialize() {
+  if (mainWindow === null) {
+    createWindow();
+  } 
+}
+
+// In this file you can include the rest of your app's specific main process
+// code. You can also put them in separate files and require them here.
+const template = [
+  {
+    label: 'Edit',
+    submenu: [
+      {role: 'undo'},
+      {role: 'redo'},
+      {type: 'separator'},
+      {role: 'cut'},
+      {role: 'copy'},
+      {role: 'paste'},
+      {role: 'pasteandmatchstyle'},
+      {role: 'delete'},
+      {role: 'selectall'}
+    ]
+  },
+  {
+    label: 'View',
+    submenu: [
+      {role: 'reload'},
+      {role: 'forcereload'},
+      {role: 'toggledevtools'},
+      {type: 'separator'},
+      {role: 'resetzoom'},
+      {role: 'zoomin'},
+      {role: 'zoomout'},
+      {type: 'separator'},
+      {role: 'togglefullscreen'}
+    ]
+  }
+];
+
+// if (process.platform === 'darwin') {
+//   template.unshift({
+//     label: app.getName(),
+//     submenu: [
+//       {role: 'quit'}
+//     ]
+//   });
+// }
+
+// Menu.setApplicationMenu(Menu.buildFromTemplate(template));

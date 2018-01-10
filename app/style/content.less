@@ -1,0 +1,76 @@
+.root-app > .main > .content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  overflow: auto;
+
+  > .title {
+    font-size: 32px;
+    line-height: 1;
+    margin-bottom: 12px;
+    word-wrap: break-word;
+  }
+
+  > .tabs {
+    margin-bottom: 12px;
+  }
+
+  > .detail {
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    > table {
+      width: 100%;
+      margin: 12px 0;
+      border-collapse: collapse;
+
+      td {
+        border-top: 1px solid #f2f2f2;
+        border-right: 1px solid #f2f2f2;
+        padding: 8px;
+        color: #444;
+
+        &:first-child {
+          border-left: 1px solid #f2f2f2;
+          white-space: nowrap;
+        }
+      }
+
+      tr:last-child > td {
+        border-bottom: 1px solid #f2f2f2;
+      }
+    }
+  }
+
+  .empty {
+    color: #888;
+    font-size: 18px;
+    padding-top: 20px;
+    text-align: center;
+  }
+
+  .hex-viewer-container {
+    margin-top: 10px;
+    border: 1px solid #f2f2f2;
+    padding: 6px;
+  }
+
+  .preview {
+    margin-top: 10px;
+    color: #444;
+    font-size: 14px;
+    word-wrap: break-word;
+    word-break: break-all;
+    border: 1px solid #f2f2f2;
+    padding: 6px;
+    min-height: 100px;
+
+    &.image > img {
+      max-height: 800px;
+    }
+  }
+}
+
+@import './hex_viewer.less';

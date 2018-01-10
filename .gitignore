@@ -1,0 +1,13 @@
+/.idea
+node_modules
+build
+/dist
+/.tmp
+**/.DS_Store
+/.vscode
+/bower_components
+**/*.css
+.jshintignore
+.jshintrc
+.jshint
+.jshint.json
