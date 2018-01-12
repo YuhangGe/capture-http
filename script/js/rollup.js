@@ -22,10 +22,7 @@ const rollupConfig = {
   plugins: [
     buble({
       objectAssign: 'Object.assign',
-      include: [
-        path.join(config.root, 'app/**/*.jsx'),
-        path.join(config.root, 'app/**/*.js')
-      ]
+      include: path.join(config.root, 'app/**/*.jsx')
     }),
     string({
       include: path.join(config.root, 'app/**/*.html')

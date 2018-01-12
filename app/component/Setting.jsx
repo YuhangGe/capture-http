@@ -32,8 +32,7 @@ export default class Setting extends React.Component {
         commonName: ''
       },
       hostForm: {
-        host: '',
-        port: ''
+        domain: ''
       }
     };
   }
@@ -52,7 +51,7 @@ export default class Setting extends React.Component {
   }
   _addHost() {
     const { hostForm } = this.state;
-    let domain = hostForm.host.trim();
+    let domain = hostForm.domain.trim();
     if (!domain) {
       return message.error('域名不能为空');
     }
@@ -60,14 +59,15 @@ export default class Setting extends React.Component {
       return message.error('域名格式错误，只需要输入根域名');
     }
     domain = '*.' + domain;
-    if (find(settingManager.hosts, h => h.host === domain)) {
+    if (find(settingManager.hosts, h => h.domain === domain)) {
       return message.error('域名已经存在');
     }
-    settingManager.addHost({
-      host: domain,
-      port: hostForm.port || '443',
+    if (!settingManager.addHost({
+      domain: domain,
       enabled: true
-    });
+    })) {
+      return message.error('添加失败');
+    }
     this.setState({
       newHost: false
     });
@@ -108,7 +108,8 @@ export default class Setting extends React.Component {
     this.setState({});
   }
   _toggleHost(host) {
-    host.enabled = !host.enabled;
+    if (host.enabled) settingManager.disableHost(host);
+    else settingManager.enableHost(host);
     this.setState({});
   }
   renderCA() {
@@ -174,14 +175,9 @@ export default class Setting extends React.Component {
         <MessageBar>请添加根域名，其下所有域名都生效</MessageBar>
         <div className="outer">
           <TextField
-            value={ hostForm.host }
-            onChanged={this._onHostFormInput.bind(this, 'host')}
+            value={ hostForm.domain }
+            onChanged={this._onHostFormInput.bind(this, 'domain')}
             placeholder="Domain, eg. google.com"
-          />
-          <TextField
-            value={ hostForm.port }
-            onChanged={this._onHostFormInput.bind(this, 'port')}
-            placeholder="Port, default is: 443"
           />
         </div>
         <div className="ctrl">
@@ -206,7 +202,6 @@ export default class Setting extends React.Component {
             <thead>
               <tr>
                 <th>域名</th>
-                <th>端口</th>
                 <th>状态</th>
                 <th>操作</th>
               </tr>
@@ -214,8 +209,7 @@ export default class Setting extends React.Component {
             <tbody>
               {hosts.map((item, i) => (
                 <tr key={i}>
-                  <td>{item.host}</td>
-                  <td>{item.port}</td>
+                  <td>{item.domain}</td>
                   <td>
                     <Icon iconName={item.enabled ? 'Accept' : 'Blocked'}/>
                   </td>
@@ -241,17 +235,12 @@ export default class Setting extends React.Component {
         <div className="ctrl">
           <DefaultButton
             primary={true}
-            onClick={() => this.setState({newHost: true, hostForm: {host: '', port: ''}})}
+            onClick={() => this.setState({newHost: true, hostForm: {domain: ''}})}
           >
             添加域名
           </DefaultButton>
         </div>
       </div>
-    );
-  }
-  _renderHostItem(item) {
-    return (
-      <div>{item.host}</div>
     );
   }
   render() {
@@ -265,9 +254,11 @@ export default class Setting extends React.Component {
         >
           <PivotItem linkText="HTTPS 域名" itemKey="host" />
           <PivotItem linkText="CA 证书" itemKey="ca" />
+          <PivotItem linkText="URL 代理" itemKey="url" />
         </Pivot>
         {curTab === 'ca' && this.renderCA()}
         {curTab === 'host' && this.renderHost()}
+        {curTab === 'url' && <p>todo...</p> }
       </div>
     );
   }

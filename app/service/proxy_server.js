@@ -1,27 +1,20 @@
 import EventEmitter from './event_emitter';
 import { Record } from './record';
 import pick from 'lodash-es/pick';
+import HTTPSManager from './https_manager';
 
-const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const net = require('net');
 const url = require('url');
 const fp = require('find-free-port');
 const ip = require('ip');
-const path = require('path');
 
-const sslOptions = {
-  key: fs.readFileSync(path.join(process.cwd(), 'cert/private/xiaoge.me.key.pem')),
-  cert: fs.readFileSync(path.join(process.cwd(), 'cert/certs/xiaoge.me.cert.pem'))
-};
 class ProxyServer extends EventEmitter {
   constructor() {
     super();
     this.port = null;
     this._server = null;
-    this._sslPort = null;
-    this._sslServer = null;
     this._capturing = true;
     this.filter = {
       url: '',
@@ -53,7 +46,6 @@ class ProxyServer extends EventEmitter {
   initialize() {
     return new Promise((resolve, reject) => {
       if (this.port) return resolve();
-      this._startSSLServer();      
       fp(1337, '0.0.0.0', (err, freePort) => {
         if (err) return reject(err);
         this.port = freePort;
@@ -68,40 +60,22 @@ class ProxyServer extends EventEmitter {
       });
     });
   }
-  _startSSLServer() {
-    return new Promise((resolve, reject) => {
-      if (this._sslServer) return resolve();
-      fp(10443, '127.0.0.1', (err, freePort) => {
-        if (err) return reject(err);
-        this._sslPort = freePort;
-        this._sslServer = https.createServer(sslOptions);
-        this._sslServer.on('request', this._handleSSLRequest.bind(this));
-        this._sslServer.listen(this._sslPort, '127.0.0.1', () => {
-          console.log(`Proxy ssl server listening at 127.0.0.1:${freePort}`);
-          resolve();
-        });
-      });
-    });
-  }
-  _handleSSLRequest(req, res) {
-    this._handleRequest(req, res, true);
-  }
-  _proxy(cReq, cRes, isHttps, record = null) {
+  _proxy(cReq, cRes, httpsInfo, record = null) {
     console.log(cReq.url);
     const u = url.parse(cReq.url);
     const options = {
-      hostname: isHttps ? 'zy.xiaoge.me' : u.hostname,
-      port: isHttps ? 443 : (u.port || 80),
+      hostname: httpsInfo ? httpsInfo.hostname : u.hostname,
+      port: httpsInfo ? (httpsInfo.port || 443) : (u.port || 80),
       path: u.path,
       method: cReq.method,
       headers: cReq.headers
     };
     if (record) {
-      record.isHttps = isHttps;
+      record.isHttps = !!httpsInfo;
       record.host = options.hostname;
       record.path = options.path;
     }
-    const pReq = (isHttps ? https : http).request(options, pRes => {
+    const pReq = (httpsInfo ? https : http).request(options, pRes => {
       cRes.writeHead(pRes.statusCode, pRes.headers);
       if (record) {
         Object.assign(record.response, pick(pRes, 'statusCode', 'headers'));
@@ -167,8 +141,6 @@ class ProxyServer extends EventEmitter {
       return false;
     }
     const ct = res.headers['content-type'];
-    console.log(status, mime, ct);
-    
     switch(mime) {
     case 'json':
       return /\b(json)\b/.test(ct);
@@ -180,12 +152,12 @@ class ProxyServer extends EventEmitter {
       return false;
     }
   }
-  _handleRequest(cReq, cRes, isHttps = false) {
+  _handleRequest(cReq, cRes, httpsInfo = null) {
     if (!this._capturing) {
-      return this._proxy(cReq, cRes, isHttps);
+      return this._proxy(cReq, cRes, httpsInfo);
     }
-    if (!this._shouldRecord(cReq, isHttps)) {
-      return this._proxy(cReq, cRes, isHttps);
+    if (!this._shouldRecord(cReq, !!httpsInfo)) {
+      return this._proxy(cReq, cRes, httpsInfo);
     }
     const {
       status,
@@ -208,29 +180,38 @@ class ProxyServer extends EventEmitter {
       this._records.push(record);
       this.emit('records-changed');
     }
-    return this._proxy(cReq, cRes, isHttps, record);
+    return this._proxy(cReq, cRes, httpsInfo, record);
   }
   
   _handleConnect(cReq, cSock) {
-    // const u = url.parse('http://' + cReq.url);
+    const u = url.parse('http://' + cReq.url);
     // console.log('proxy c', cReq.url);
-    const pSock = net.connect(this._sslPort, '127.0.0.1', function () {
-      cSock.write('HTTP/1.1 200 Connection Established\r\n\r\n');
-      pSock.pipe(cSock);
-    }).on('error', err => {
-      console.error(err);
-      cSock.end();
-      pSock.end();
-    });
-    cSock.pipe(pSock);
-    cSock.on('error', err => {
-      console.error(err);
-      pSock.end();
-      cSock.end();
+    HTTPSManager.getServer(u.hostname, u.port || '443').then(server => {
+      const port = server ? server.port : u.port;
+      const host = server ? '127.0.0.1' : u.hostname;
+      console.log(u, port, host);
+
+      const pSock = net.connect(host, port, function () {
+        cSock.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+        pSock.pipe(cSock);
+      }).on('error', err => {
+        console.error(err);
+        cSock.end();
+        pSock.end();
+      });
+      cSock.pipe(pSock);
+      cSock.on('error', err => {
+        console.error(err);
+        pSock.end();
+        cSock.end();
+      });
     });
   }
   
 }
 
 // singleton
-export default new ProxyServer();
+const ps = new ProxyServer();
+HTTPSManager.registerProxyServer(ps);
+
+export default ps;

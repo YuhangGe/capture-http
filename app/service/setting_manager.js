@@ -1,11 +1,15 @@
 import EventEmitter from './event_emitter';
 import {
-  generateCA
+  generateCA,
+  generateDomainCert
 } from './cert';
+import HTTPSManager from './https_manager';
+
 const path = require('path');
 const fs = require('fs');
 const CWD = process.cwd();
 const dataRoot = path.join(CWD, 'data');
+const certsRoot = path.join(dataRoot, 'certs');
 
 function stat(fileOrDir) {
   try {
@@ -24,16 +28,22 @@ function exist(fileOrDir) {
   }
 }
 
+function mkdir(dir) {
+  try {
+    fs.accessSync(dir);
+  } catch(ex) {
+    fs.mkdirSync(dir);
+  }
+}
+
+mkdir(dataRoot);
+mkdir(certsRoot);
+
 class SettingManager extends EventEmitter {
   constructor() {
     super();
     this._ca = null;
     this._hosts = null;
-    try {
-      fs.accessSync(dataRoot);
-    } catch(ex) {
-      fs.mkdirSync(dataRoot);
-    }
   }
   get ca() {
     if (!this._ca) {
@@ -75,12 +85,34 @@ class SettingManager extends EventEmitter {
     }
   }
   addHost(host) {
+    try {
+      const pem = generateDomainCert(host.domain, this._ca);
+      const name = host.domain.substring(2);
+      fs.writeFileSync(path.join(certsRoot, name + '.cert.pem'), pem.certificate);
+      fs.writeFileSync(path.join(certsRoot, name + '.key.pem'), pem.privateKey);
+      fs.writeFileSync(path.join(certsRoot, name + '.key.pub.pem'), pem.publicKey);
+      host.privateKey = pem.privateKey;
+      host.publicKey = pem.publicKey;
+      host.certificate = pem.certificate;
+    } catch(ex) {
+      console.error(ex);
+      return false;
+    }
     this._hosts.push(host);
     this._writeHosts();
+    return true;
   }
   rmHost(host) {
     const idx = this._hosts.indexOf(host);
     idx >= 0 && this._hosts.splice(idx, 1);
+    this._writeHosts();
+  }
+  enableHost(host) {
+    host.enabled = true;
+    this._writeHosts();
+  }
+  disableHost(host) {
+    host.enabled = false;
     this._writeHosts();
   }
   generateCA(attrs) {
@@ -105,4 +137,8 @@ class SettingManager extends EventEmitter {
 }
 
 // singleton
-export default new SettingManager();
+const sm = new SettingManager();
+HTTPSManager.registerSettingManager(sm);
+
+export default sm;
+
