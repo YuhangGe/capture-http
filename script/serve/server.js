@@ -43,10 +43,11 @@ async function createDevServer() {
   initLiveReload(server);
   server.reload = reload;
   await new Promise((resolve, reject) => {
-    ffp(3000, (err, freePort) => {
+    ffp(3000, '127.0.0.1', (err, freePort) => {
       if (err) return reject(err);
       server.port = freePort;
       server.listen(freePort, '127.0.0.1', () => {
+        console.log(`Dev reload server listening at 127.0.0.1:${freePort}`);
         resolve();
       });
     });

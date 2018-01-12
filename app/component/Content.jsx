@@ -55,7 +55,7 @@ export default class Content extends React.Component {
     return (
       <div className="content record-detail">
         <div className="title">
-          {request.url}
+          http{r.isHttps ? 's' : ''}://{r.host}{r.path}
         </div>
         <div className="tabs">
           <Pivot

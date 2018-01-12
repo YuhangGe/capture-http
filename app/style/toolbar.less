@@ -28,3 +28,71 @@
     margin-right: 8px;
   }
 }
+
+.ms-Dialog .proxyServerDialog {
+  p {
+    text-align: center;
+  }
+}
+
+.ms-Dialog .systemSettingDialog {
+  max-width: 80vw;
+  min-width: 50vw;
+
+  .outer {
+    height: 240px;
+    overflow-y: auto;
+  }
+
+  .form {
+    margin-top: 10px;
+
+    .ms-TextField,
+    .ms-MessageBar {
+      margin-bottom: 8px;
+    }
+
+    .ctrl {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+
+      > button {
+        margin-left: 8px;
+      }
+    }
+
+    .table {
+      width: 100%;
+      margin-bottom: 12px;
+
+      td {
+        padding: 4px 0;
+      }
+
+      td:first-child {
+        font-weight: bold;
+      }
+
+      td:nth-child(3),
+      td:nth-child(2),
+      th:nth-child(3),
+      th:nth-child(2) {
+        width: 50px;
+        text-align: center;
+      }
+
+      td:last-child,
+      th:last-child {
+        width: 60px;
+
+        button {
+          padding: 0;
+          margin-right: 4px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
+  }
+}

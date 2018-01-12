@@ -4,6 +4,8 @@ import List from './List';
 import Content from './Content';
 import proxyServer from '../service/proxy_server';
 
+const ip = require('ip');
+
 export default class CaptureHttpApp extends React.Component {
   constructor(props) {
     super(props);
@@ -13,6 +15,10 @@ export default class CaptureHttpApp extends React.Component {
     };
     this._recordsChangedHandler = this.onRecordsChanged.bind(this);
     this._captureChangedHandler = this._onCaptureChanged.bind(this);
+    this._onlineChangedHandler = this._onOnlineChanged.bind(this);
+  }
+  _onOnlineChanged() {
+    document.title = `Capture HTTP(s) - Proxy at ${ip.address()}:${proxyServer.port}`;
   }
   onRecordClick(record) {
     if (this.state.activeRecord === record) return;
@@ -21,10 +27,15 @@ export default class CaptureHttpApp extends React.Component {
     });
   }
   componentDidMount() {
+    window.addEventListener('online', this._onlineChangedHandler);
+    window.addEventListener('offline', this._onlineChangedHandler);
     proxyServer.on('records-changed', this._recordsChangedHandler);
     proxyServer.on('capture-changed', this._captureChangedHandler);
+    this._onOnlineChanged();
   }
   componentWillUnmount() {
+    window.removeEventListener('online', this._onlineChangedHandler);
+    window.removeEventListener('offline', this._onlineChangedHandler);
     proxyServer.off('records-changed', this._recordsChangedHandler);
     proxyServer.off('capture-changed', this._captureChangedHandler);
   }

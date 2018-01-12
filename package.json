@@ -48,7 +48,10 @@
     "jshexgrid": "0.0.1",
     "lodash-es": "^4.17.4",
     "moment": "^2.20.1",
+    "node-forge": "^0.7.1",
     "office-ui-fabric-react": "^5.38.0",
+    "pure-notify": "^1.0.3",
+    "qrcode": "^1.2.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0"
   },

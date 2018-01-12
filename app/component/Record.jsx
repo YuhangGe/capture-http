@@ -32,7 +32,13 @@ export default class Record extends React.Component {
       <li className={'record' + (this.props.isActive ? ' active' : '')} onClick={this._onClick.bind(this)}>
         <div className="title">
           <span className="method">{r.request.method.toUpperCase()}</span>
-          <span className="url">{r.request.url}</span>
+          <span className="host">{r.host}</span>
+          {r.isHttps && (
+            <Icon />
+          )}
+        </div>
+        <div className="path">
+          {r.path}
         </div>
         <div className="info">
           <span className="time">{moment(r.startAt).format('HH:MM:ss')}</span>

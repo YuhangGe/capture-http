@@ -5,7 +5,8 @@
   },
   "globals": {
     "require": true,
-    "Buffer": true
+    "Buffer": true,
+    "process": true
   },
   "parserOptions": {
     "ecmaVersion": 2017,
@@ -49,6 +50,6 @@
     "prefer-const": [
       "error", 
       { "destructuring": "all" }
-    ]    
+    ]  
   }
 }

@@ -1,12 +1,18 @@
 import React from 'react';
+import QRCode from 'qrcode';
 import { 
   IconButton,
   TextField,
   TooltipHost,
   DirectionalHint,
-  Dropdown
+  Dropdown,
+  Dialog,
+  DialogType
 } from 'fabric';
+import Setting from './Setting';
 import proxyServer from '../service/proxy_server';
+
+const ip = require('ip');
 
 const PROTOCOLS = [
   { key: 'all', text: '全部' },
@@ -32,8 +38,11 @@ export default class Toolbar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      filter: proxyServer.filter
+      filter: proxyServer.filter,
+      showInfo: false,
+      showSetting: true
     };
+    this.$canvas = null;
     this._captureChangedHandler = this._onCaptureChanged.bind(this);
   }
   componentDidMount() {
@@ -46,7 +55,25 @@ export default class Toolbar extends React.Component {
     this.setState({});
   }
   showQR() {
-
+    this.setState({ showInfo: true });
+  }
+  closeQR() {
+    this.setState({ showInfo: false });
+  }
+  openSetting() {
+    this.setState( { showSetting: true });
+  }
+  closeSetting() {
+    this.setState({ showSetting: false });
+  }
+  drawQR() {
+    this.$canvas && QRCode.toCanvas(this.$canvas, JSON.stringify({
+      type: 'HTTP',
+      host: ip.address(),
+      port: proxyServer.port
+    }), {
+      width: 200
+    });
   }
   clear() {
     proxyServer.clearRecords();
@@ -123,15 +150,56 @@ export default class Toolbar extends React.Component {
           options={MIMES}
         />
         <i/>
-        <TooltipHost
-          content='查看代理服务器信息'
-          directionalHint={ DirectionalHint.bottomCenter }
+        <IconButton
+          onClick={this.showQR.bind(this)}
+          iconProps={ { iconName: 'Info2' } } 
+        />
+        <IconButton
+          onClick={this.openSetting.bind(this)}
+          iconProps ={ {iconName: 'Settings'} }
+        />
+        <Dialog
+          hidden={ !this.state.showInfo }
+          onDismiss={ this.closeQR.bind(this) }
+          dialogContentProps={ {
+            type: DialogType.largeHeader,
+            title: '系统信息'
+          } }
+          modalProps={ {
+            onLayerDidMount: this.drawQR.bind(this),
+            isBlocking: false,
+            containerClassName: 'proxyServerDialog'
+          } }
         >
-          <IconButton
-            onClick={this.showQR.bind(this)}
-            iconProps={ { iconName: 'Info2' } } 
-          />
-        </TooltipHost>
+          <p>
+            <canvas ref={$c => this.$canvas = $c}/>
+          </p>
+          <p>
+            http://{ip.address()}:{proxyServer.port}
+          </p>
+        </Dialog>
+        <Dialog
+          hidden={ !this.state.showSetting }
+          onDismiss={ this.closeSetting.bind(this) }
+          dialogContentProps={ {
+            type: DialogType.largeHeader,
+            title: (
+              <span style={{display: 'flex', alignItems: 'center'}}>
+                <span style={{flex: 1}}>系统配置</span>
+                <IconButton
+                  onClick={this.closeSetting.bind(this)}
+                  iconProps={ { iconName: 'ChromeClose', style: {color: '#fff'} } } 
+                />
+              </span>
+            )
+          } }
+          modalProps={ {
+            isBlocking: true,
+            containerClassName: 'systemSettingDialog'
+          } }
+        >
+          <Setting/>
+        </Dialog>
       </div>
     );
   }

@@ -2,6 +2,8 @@
 node_modules
 build
 /dist
+/cert
+/data
 /.tmp
 **/.DS_Store
 /.vscode

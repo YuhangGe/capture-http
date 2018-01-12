@@ -15,6 +15,10 @@ export class Record extends EventEmitter {
     this._err = null;
     this.startAt = Date.now();
     this.duration = 0;
+    this.path = null;
+    this.host = null;
+    this.isHttps = false;
+    this.isHttpsLocked = true;
   }
   destroy() {
     this.request = null;

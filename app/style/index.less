@@ -17,6 +17,11 @@ p {
   padding: 0;
 }
 
+a {
+  color: #0078d7;
+  text-decoration: none;
+}
+
 li {
   list-style: none;
 }
@@ -31,21 +36,20 @@ li {
 
     &.empty {
       display: block;
-      padding-top: 120px;
+      padding-top: 30vh;
 
       > p {
         font-size: 26px;
         text-align: center;
         color: #888;
         flex: 1;
-
-        a {
-          color: #0078d7;
-          text-decoration: none;
-        }
       }
     }
   }
+}
+
+.pure-notify-container {
+  z-index: 9999999;
 }
 
 @import './toolbar.less';

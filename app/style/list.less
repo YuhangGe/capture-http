@@ -1,11 +1,12 @@
 .root-app > .main > .record-list {
-  width: 30vw;
+  width: 35vw;
   border-right: 1px solid #f2f2f2;
   overflow: auto;
 
   > li {
     padding: 12px;
     cursor: pointer;
+    font-size: 14px;
 
     &.active,
     &:hover {
@@ -14,9 +15,9 @@
     }
 
     > .title {
-      font-size: 18px;
+      font-size: 16px;
       display: flex;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
 
       > span.method {
         color: #666;
@@ -29,6 +30,14 @@
         overflow: hidden;
         white-space: nowrap;
       }
+    }
+
+    > .path {
+      font-size: 16px;
+      margin-bottom: 8px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
     }
 
     > .info {

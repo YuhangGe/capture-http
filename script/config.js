@@ -31,21 +31,28 @@ module.exports = {
     'office-ui-fabric-react/dist/office-ui-fabric-react.js',
     'office-ui-fabric-react/dist/css/fabric.css',
     'highlight.js/styles/github.css',
-    'jshexgrid/hexgrid.js'
+    'jshexgrid/hexgrid.js',
+    'qrcode/build/qrcode.js',
+    'pure-notify/dist/pure-notify.js',
+    'pure-notify/dist/pure-notify.css'
   ],
   rollupExternal: [
     'react',
     'react-dom',
     'fabric',
     'moment',
-    'jshex'
+    'jshex',
+    'qrcode',
+    'notify'
   ],
   rollupGlobals: {
     moment: 'moment',
     react: 'React',
     'react-dom': 'ReactDOM',
     fabric: 'Fabric',
-    jshex: 'JSHexGrid'
+    jshex: 'JSHexGrid',
+    qrcode: 'QRCode',
+    notify: 'PureNotify'
   },
   rollupAlias: {
     
