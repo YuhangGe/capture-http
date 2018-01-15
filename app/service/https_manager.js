@@ -9,7 +9,7 @@ class Server {
     this.info = info;
     this._server = null;
     this.port = null;
-    this._opts = opts.ps;
+    this._opts = opts;
   }
   _handleRequest(req, res) {
     this._opts.ps._handleRequest(req, res, {
@@ -28,7 +28,7 @@ class Server {
         });
         this._server.on('request', this._handleRequest.bind(this));
         this._server.listen(freePort, '127.0.0.1', () => {
-          console.log(`Proxy ssl server for ${this.info.domain}:${this.info.port} listening at 127.0.0.1:${freePort}`);
+          console.log(`Proxy ssl server for ${this.info.domain} listening at 127.0.0.1:${freePort}`);
           resolve();
         });
       });
@@ -60,7 +60,6 @@ class HTTPSManager extends EventEmitter {
       return null;
     }
     const hostInfo = find(this._sm.hosts, h => h.domain === `*.${m[0]}`);
-    console.log(hostInfo);
     if (!hostInfo || !hostInfo.enabled) {
       return null;
     }

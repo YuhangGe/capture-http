@@ -41,7 +41,7 @@
     "ws": "^4.0.0"
   },
   "dependencies": {
-    "electron": "^1.8.2-beta.3",
+    "electron": "^1.7.10",
     "find-free-port": "^1.1.0",
     "highlight.js": "^9.12.0",
     "ip": "^1.1.5",

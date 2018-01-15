@@ -9,7 +9,7 @@ export class Record extends EventEmitter {
   constructor(req) {
     super();
     this.id = simpleUUID();
-    this.request = pick(req, 'method', 'url', 'headers');
+    this.request = req ? pick(req, 'method', 'url', 'headers') : null;
     this.response = {};
     this._state = 'waiting';
     this._err = null;
@@ -18,7 +18,6 @@ export class Record extends EventEmitter {
     this.path = null;
     this.host = null;
     this.isHttps = false;
-    this.isHttpsLocked = true;
   }
   destroy() {
     this.request = null;

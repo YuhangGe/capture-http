@@ -104,6 +104,15 @@ export function generateDomainCert(domain, ca) {
     nonRepudiation: true,
     keyEncipherment: true,
     dataEncipherment: true
+  }, {
+    name: 'subjectAltName',
+    altNames: [{
+      type: 2,
+      value: domain
+    }, {
+      type: 2, // URI
+      value: '*.' + domain
+    }]
   }]);
   cert.publicKey = csr.publicKey;
   cert.sign(caKey, sha256.create());

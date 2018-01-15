@@ -2,6 +2,7 @@ import EventEmitter from './event_emitter';
 import { Record } from './record';
 import pick from 'lodash-es/pick';
 import HTTPSManager from './https_manager';
+import settingManager from './setting_manager';
 
 const http = require('http');
 const https = require('https');
@@ -24,6 +25,10 @@ class ProxyServer extends EventEmitter {
       method: ''
     };
     this._records = [ ];
+    this.certDownloadServer = {
+      port: null,
+      server: null
+    };
   }
   clearRecords() {
     this._records.forEach(r => r.destroy());
@@ -44,6 +49,12 @@ class ProxyServer extends EventEmitter {
     this.emit('capture-changed', this._capturing);
   }
   initialize() {
+    return Promise.all([
+      this.startProxyServer(),
+      this.startCertDownloadServer()
+    ]);
+  }
+  startProxyServer() {
     return new Promise((resolve, reject) => {
       if (this.port) return resolve();
       fp(1337, '0.0.0.0', (err, freePort) => {
@@ -60,8 +71,36 @@ class ProxyServer extends EventEmitter {
       });
     });
   }
+  startCertDownloadServer() {
+    return new Promise((resolve, reject) => {
+      if (this.certDownloadServer.port) return resolve();
+      fp(8000, '0.0.0.0', (err, freePort) => {
+        if (err) return reject(err);
+        this.certDownloadServer.port = freePort;
+        this.certDownloadServer.server = http.createServer();
+        this.certDownloadServer.server
+          .on('request', this._handleDownloadCertRequest.bind(this))
+          .listen(freePort, '0.0.0.0', () => {
+            console.log(`Cert download server listening at ${ip.address()}:${freePort}`);
+            resolve();
+          });
+      });
+    });
+  }
+  _handleDownloadCertRequest(req, res) {
+    if (!settingManager.ca) {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+    res.writeHead(200, {
+      'content-type': 'application/x-x509-user-cert',
+      'content-disposition': 'attachment; filename=capture_http_ca.cert.pem'
+    });
+    res.write(settingManager.ca.certificate);
+    res.end();
+  }
   _proxy(cReq, cRes, httpsInfo, record = null) {
-    console.log(cReq.url);
     const u = url.parse(cReq.url);
     const options = {
       hostname: httpsInfo ? httpsInfo.hostname : u.hostname,
@@ -111,6 +150,10 @@ class ProxyServer extends EventEmitter {
       pReq.end();
       cRes.end();
     });
+  }
+  _addRecord(r) {
+    this._records.push(r);
+    this.emit('records-changed');
   }
   _shouldRecord(req, isHttps = false) {
     const {
@@ -168,8 +211,7 @@ class ProxyServer extends EventEmitter {
       if (state !== 'error' && state !== 'finish') return;
       record.off('state-changed', onRSC);
       if (state !== 'finish' || this._shouldPushRecord(status, mime, record)) {
-        this._records.push(record);
-        this.emit('records-changed');
+        this._addRecord(record);
       } else {
         record.destroy();
       }
@@ -177,37 +219,54 @@ class ProxyServer extends EventEmitter {
     if (status && status !== 'all' || mime && mime !== 'all') {
       record.on('state-changed', onRSC);
     } else {
-      this._records.push(record);
-      this.emit('records-changed');
+      this._addRecord(record);
     }
     return this._proxy(cReq, cRes, httpsInfo, record);
   }
   
   _handleConnect(cReq, cSock) {
     const u = url.parse('http://' + cReq.url);
+    if (!this._capturing) {
+      this._pipeConnect(cSock, u.port || 443, u.hostname);
+      return;
+    }
     // console.log('proxy c', cReq.url);
     HTTPSManager.getServer(u.hostname, u.port || '443').then(server => {
       const port = server ? server.port : u.port;
       const host = server ? '127.0.0.1' : u.hostname;
-      console.log(u, port, host);
-
-      const pSock = net.connect(host, port, function () {
-        cSock.write('HTTP/1.1 200 Connection Established\r\n\r\n');
-        pSock.pipe(cSock);
-      }).on('error', err => {
-        console.error(err);
-        cSock.end();
-        pSock.end();
-      });
-      cSock.pipe(pSock);
-      cSock.on('error', err => {
-        console.error(err);
-        pSock.end();
-        cSock.end();
+      let r = null;
+      if (!server) {
+        r = new Record();
+        r.host = u.hostname + (u.port.toString() === '443' ? '' : `:${u.port}`);
+        r.isHttps = true;
+        this._addRecord(r);
+      }
+      const pSock = this._pipeConnect(cSock, port, host);
+      pSock.on('end', () => {
+        if (r) {
+          r.duration = Date.now() - r.startAt;
+          r.state = 'finish';
+        }
       });
     });
   }
-  
+  _pipeConnect(cSock, port, host) {
+    const pSock = net.connect(port, host, function () {
+      cSock.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+      pSock.pipe(cSock);
+    }).on('error', err => {
+      console.error(err);
+      cSock.end();
+      pSock.end();
+    });
+    cSock.pipe(pSock);
+    cSock.on('error', err => {
+      console.error(err);
+      pSock.end();
+      cSock.end();
+    });
+    return pSock;
+  }
 }
 
 // singleton

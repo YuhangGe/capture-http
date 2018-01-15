@@ -105,6 +105,14 @@ class SettingManager extends EventEmitter {
   rmHost(host) {
     const idx = this._hosts.indexOf(host);
     idx >= 0 && this._hosts.splice(idx, 1);
+    try {
+      const name = host.domain.substring(2);
+      fs.unlinkSync(path.join(certsRoot, name + '.cert.pem'));
+      fs.unlinkSync(path.join(certsRoot, name + '.key.pem'));
+      fs.unlinkSync(path.join(certsRoot, name + '.key.pub.pem'));  
+    } catch(ex) {
+      console.error(ex);
+    }
     this._writeHosts();
   }
   enableHost(host) {

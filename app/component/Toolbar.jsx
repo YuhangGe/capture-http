@@ -1,5 +1,4 @@
 import React from 'react';
-import QRCode from 'qrcode';
 import { 
   IconButton,
   TextField,
@@ -10,9 +9,8 @@ import {
   DialogType
 } from 'fabric';
 import Setting from './Setting';
+import Info from './Info';
 import proxyServer from '../service/proxy_server';
-
-const ip = require('ip');
 
 const PROTOCOLS = [
   { key: 'all', text: '全部' },
@@ -40,7 +38,7 @@ export default class Toolbar extends React.Component {
     this.state = {
       filter: proxyServer.filter,
       showInfo: false,
-      showSetting: true
+      showSetting: false
     };
     this.$canvas = null;
     this._captureChangedHandler = this._onCaptureChanged.bind(this);
@@ -65,15 +63,6 @@ export default class Toolbar extends React.Component {
   }
   closeSetting() {
     this.setState({ showSetting: false });
-  }
-  drawQR() {
-    this.$canvas && QRCode.toCanvas(this.$canvas, JSON.stringify({
-      type: 'HTTP',
-      host: ip.address(),
-      port: proxyServer.port
-    }), {
-      width: 200
-    });
   }
   clear() {
     proxyServer.clearRecords();
@@ -166,17 +155,11 @@ export default class Toolbar extends React.Component {
             title: '系统信息'
           } }
           modalProps={ {
-            onLayerDidMount: this.drawQR.bind(this),
             isBlocking: false,
             containerClassName: 'proxyServerDialog'
           } }
         >
-          <p>
-            <canvas ref={$c => this.$canvas = $c}/>
-          </p>
-          <p>
-            http://{ip.address()}:{proxyServer.port}
-          </p>
+          <Info/>
         </Dialog>
         <Dialog
           hidden={ !this.state.showSetting }

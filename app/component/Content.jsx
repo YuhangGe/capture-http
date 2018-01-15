@@ -50,8 +50,8 @@ export default class Content extends React.Component {
     const r = this.props.record;
     const { request, response } = r;
     const current = this.state.current === 'request' ? request : response;
-    const headers = current.headers ? current.headers : null;
-    const body = current.body && current.body.length > 0 ? current.body : null;
+    const headers = current && current.headers ? current.headers : null;
+    const body = current && current.body && current.body.length > 0 ? current.body : null;
     return (
       <div className="content record-detail">
         <div className="title">
@@ -72,16 +72,20 @@ export default class Content extends React.Component {
         </div>
         <div className="detail">
           <div className="h">Headers</div>
-          <table>
-            <tbody>
-              {headers && Object.keys(headers).map(k => (
-                <tr key={k}>
-                  <td>{k}</td>
-                  <td>{headers[k]}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {request ? (
+            <table>
+              <tbody>
+                {headers && Object.keys(headers).map(k => (
+                  <tr key={k}>
+                    <td>{k}</td>
+                    <td>{headers[k]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ): (
+            <p className="empty">encoded https {this.state.current}</p>
+          )}
           <div className="h">Body</div>
           {body ? (
             <div className="body">

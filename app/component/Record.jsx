@@ -1,5 +1,8 @@
 import React from 'react';
 import moment from 'moment';
+import {
+  Icon
+} from 'fabric';
 
 function formatDuration(v) {
   if (v < 1000) return v + 'ms';
@@ -31,14 +34,17 @@ export default class Record extends React.Component {
     return (
       <li className={'record' + (this.props.isActive ? ' active' : '')} onClick={this._onClick.bind(this)}>
         <div className="title">
-          <span className="method">{r.request.method.toUpperCase()}</span>
+          <span className="method">{
+            r.request ? r.request.method.toUpperCase() : (
+              <Icon iconName="Lock"/>
+            )}
+          </span>
           <span className="host">{r.host}</span>
-          {r.isHttps && (
-            <Icon />
-          )}
         </div>
         <div className="path">
-          {r.path}
+          {r.request ? r.path : (
+            <span style={{color: '#666'}}>encoded https request/response</span>
+          )}
         </div>
         <div className="info">
           <span className="time">{moment(r.startAt).format('HH:MM:ss')}</span>
