@@ -11,7 +11,7 @@ const LIVE_CODE = fs.readFileSync(path.join(__dirname, '_tpl.live.js'), 'utf-8')
 async function _write(libs, renders, ext) {
   if (renders.length === 0) return null;
   const hash = await _util.calcFileHash(libs.join(','), false);
-  const fn = `${config.pkgName}.render.${hash}${ext}`;
+  const fn = `${config.pkgName}.render.${config.buildMode ? 'min.' : ''}${hash}${ext}`;
   const fullpath = path.join(distDir, ext.substring(1), fn);
   if (!(await _util.exists(fullpath))) {
     await _util.mkdir(path.dirname(fullpath), true);
@@ -22,7 +22,6 @@ async function _write(libs, renders, ext) {
 }
 
 async function generate(reloadServer = EMPTY_SERVER, cssFile = 'css/capture-http.css', jsFile = 'js/capture-http.js') {
-  await _util.mkdir(path.join(distDir, '.lib'), true);
   await _util.mkdir(path.join(distDir, 'js'), true);
 
   let html = await _util.readFile(path.join(config.root, 'app/index.htm'), 'utf-8');

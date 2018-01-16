@@ -30,7 +30,7 @@ async function handleLib(lib) {
   const ext = src.endsWith('.js') ? '.js' : '.css';
   const bn = path.basename(src, ext);
   if (!config.buildMode) {
-    return [`${bn}-${pkg.version}${ext}`, await _util.readFile(file, 'utf-8')];
+    return [`${pkg.name}-${pkg.version}${ext}`, await _util.readFile(file, 'utf-8')];
   }
   let minFile;
   if (Array.isArray(lib)) {
@@ -59,21 +59,22 @@ async function handleLib(lib) {
       minFile = file;
     } else {
       if (!(await _util.exists(minFile))) {
-        minFile = await minLib(file, bn, pkg.version, config, ext);
+        minFile = await minLib(file, bn, pkg, config, ext);
       }
     }
   }
 
-  return [`${bn}-${pkg.version}.min${ext}`, await _util.readFile(minFile, 'utf-8')];
+  return [`${pkg.name}-${pkg.version}.min${ext}`, await _util.readFile(minFile, 'utf-8')];
 
 }
 
-async function minLib(file, bn, version, config, ext) {
-  const minFile = path.join(tmpLibPath, `${bn}-${version}.min${ext}`);
+async function minLib(file, bn, pkg, config, ext) {
+  await _util.mkdir(tmpLibPath, true);
+  const minFile = path.join(tmpLibPath, `${pkg.name}-${pkg.version}.min${ext}`);
   if (await _util.exists(minFile)) {
     return minFile;
   }
-  console.log(`${bn}-${version}.min${ext}`.yellow,  `not found, use ${ext === '.js' ? 'uglify-js' : 'clean-css'} to generate it.`);
+  console.log(`${pkg.name}-${pkg.version}.min${ext}`.yellow,  `not found, use ${ext === '.js' ? 'uglify-js' : 'clean-css'} to generate it.`);
   let result = '';
   if (ext === '.js')  {
     const source = await _util.readFile(file, 'utf-8');

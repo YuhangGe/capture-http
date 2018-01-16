@@ -1,18 +1,19 @@
 {
   "name": "capture-http",
+  "productName": "Capture HTTP(s) app",
   "version": "1.0.0",
   "description": "A simple HTTP(s) traffic capture tool",
-  "main": "app/main.js",
+  "main": "main.js",
   "scripts": {
     "start": "npm run dev",
-    "dev": "./script/fe.js dev",
-    "build": "npm run lint && ./script/fe.js build",
+    "dev": "NODE_ENV=development ./script/fe.js dev",
+    "build": "npm run lint && rm -rf ./dist && ./script/fe.js build",
     "lint": "npm run eslint && npm run lesslint",
     "eslint": "eslint --fix .",
     "lesslint": "stylelint app/**/*.less --fix --syntax less",
     "validate": "npm ls"
   },
-  "repository": "https://github.com/electron/electron-quick-start",
+  "repository": "https://github.com/YuhangGe/capture-http.git",
   "keywords": [
     "http",
     "https",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "chokidar": "^2.0.0",
     "colors": "^1.1.2",
+    "electron-packager": "^10.1.1",
     "eslint": "^4.15.0",
     "eslint-plugin-react": "^7.5.1",
     "less": "^2.7.3",

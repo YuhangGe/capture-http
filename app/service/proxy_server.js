@@ -16,7 +16,7 @@ class ProxyServer extends EventEmitter {
     super();
     this.port = null;
     this._server = null;
-    this._capturing = true;
+    this._capturing = false;
     this.filter = {
       url: '',
       protocol: '',
@@ -234,37 +234,37 @@ class ProxyServer extends EventEmitter {
     HTTPSManager.getServer(u.hostname, u.port || '443').then(server => {
       const port = server ? server.port : u.port;
       const host = server ? '127.0.0.1' : u.hostname;
-      let r = null;
-      if (!server) {
-        r = new Record();
-        r.host = u.hostname + (u.port.toString() === '443' ? '' : `:${u.port}`);
-        r.isHttps = true;
-        this._addRecord(r);
-      }
       const pSock = this._pipeConnect(cSock, port, host);
-      pSock.on('end', () => {
-        if (r) {
-          r.duration = Date.now() - r.startAt;
-          r.state = 'finish';
-        }
-      });
+      if (server) return;
+      const r = new Record();
+      r.host = u.hostname + (u.port.toString() === '443' ? '' : `:${u.port}`);
+      r.isHttps = true;
+      this._addRecord(r);      
+      const onFinish = () => {
+        r.duration = Date.now() - r.startAt;
+        r.state = 'finish';
+        pSock.removeListener('end', onFinish);
+        pSock.removeListener('error', onFinish);
+      };
+      pSock.on('end', onFinish);
+      pSock.on('error', onFinish);
     });
   }
   _pipeConnect(cSock, port, host) {
     const pSock = net.connect(port, host, function () {
       cSock.write('HTTP/1.1 200 Connection Established\r\n\r\n');
       pSock.pipe(cSock);
-    }).on('error', err => {
+    });
+    cSock.pipe(pSock);    
+    const onErr = err => {
       console.error(err);
       cSock.end();
       pSock.end();
-    });
-    cSock.pipe(pSock);
-    cSock.on('error', err => {
-      console.error(err);
-      pSock.end();
-      cSock.end();
-    });
+      pSock.removeListener('error', onErr);
+      cSock.removeListener('error', onErr);      
+    };
+    pSock.on('error', onErr);
+    cSock.on('error', onErr);
     return pSock;
   }
 }

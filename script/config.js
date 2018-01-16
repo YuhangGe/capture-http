@@ -1,4 +1,5 @@
 const path = require('path');
+const execSync = require('child_process').execSync;
 const pEnv = process.env;
 const env = {};
 
@@ -13,9 +14,15 @@ for(const k in pEnv) {
 module.exports = {
   pkgName: 'caputre-http',
   buildMode: pEnv.BUILD_MODE === 'true',
+  buildHash: (function () {
+    const output = execSync('git log -n 1', {
+      cwd: __dirname
+    });
+    const m = output.toString().match(/commit\s+([a-f0-9]+)/);
+    return m[1];
+  })(),
   root: path.resolve(__dirname, '..'),
   env,
-  noColor: pEnv.hasOwnProperty('NO_COLOR'),
   noCompress: pEnv.hasOwnProperty('NO_COMPRESS'),
   /**
    * 以下指定了依赖的所有第三方库。

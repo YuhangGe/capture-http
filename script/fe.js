@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 require('colors');
-
+if (process.env.hasOwnProperty('NO_COLOR')) {
+  process.env.TERM = 'dumb';
+}
 const map = {
   dev: 'dev.js',
   build: 'build.js',

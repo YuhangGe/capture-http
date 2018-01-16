@@ -43,7 +43,7 @@ module.exports = async function compile() {
   try {
     const bundle = await rollup.rollup(rollupConfig);
     rollupConfig.cache = bundle;
-    bundle.write(rollupConfig);
+    await bundle.write(rollupConfig);
     console.log('Rollup finish, generate', (config.pkgName + '.js').green);    
   } catch(ex) {
     console.log(`Rollup error: ${ex.message.red}`);
@@ -66,9 +66,7 @@ module.exports = async function compile() {
       console.log('Uglify finish.');
     }
   }
-
-  const hash = await _util.getGitHash();
-  const outFile = `${config.pkgName}.${hash}.min.js`;
+  const outFile = `${config.pkgName}.${config.buildHash}.min.js`;
   await _util.writeFile(path.join(config.root, 'dist', 'js', outFile), gCode);
   console.log('Generate JS', outFile.green);
   return 'js/' + outFile;

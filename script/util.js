@@ -122,12 +122,6 @@ async function calcFileHash(file, tryReadFile = true) {
   return hash.digest('hex');
 }
 
-async function getGitHash() {
-  const output = await execCommand('git log -n 1');
-  const m = output.match(/commit\s+([a-f0-9]+)/);
-  return m[1];
-}
-
 function sleep(time) {
   return new Promise(resolve => {
     setTimeout(resolve, time);
@@ -161,6 +155,5 @@ module.exports = {
   writeFile: wrapFnPromise(fs.writeFile),
   unlink: wrapFnPromise(fs.unlink),
   rmdir: wrapFnPromise(fs.rmdir),
-  calcFileHash,
-  getGitHash
+  calcFileHash
 };

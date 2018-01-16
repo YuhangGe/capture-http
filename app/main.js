@@ -8,7 +8,7 @@ const BrowserWindow = electron.BrowserWindow;
 
 const path = require('path');
 const url = require('url');
-
+const isDevMode = process.env.NODE_ENV === 'development';
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow = null;
@@ -22,9 +22,10 @@ function createWindow () {
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
-    pathname: path.resolve(__dirname, '../.tmp/index.html'),
+    pathname: path.join(__dirname, isDevMode ? '../.tmp' : '', 'index.html'),
     protocol: 'file:',
-    slashes: true
+    slashes: true,
+    icon: path.join(__dirname, isDevMode ? '../assets' : 'assets', 'icons/png/64x64.png')
   }));
 
   // Open the DevTools.
