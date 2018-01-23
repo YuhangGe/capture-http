@@ -7,8 +7,9 @@ import HTTPSManager from './https_manager';
 
 const path = require('path');
 const fs = require('fs');
-const CWD = process.cwd();
-const dataRoot = path.join(CWD, 'data');
+const isDevMode = process.env.NODE_ENV === 'development';
+const electron = require('electron');
+const dataRoot = isDevMode ? path.join(process.cwd(), 'data') : (electron.app || electron.remote.app).getPath('userData');
 const certsRoot = path.join(dataRoot, 'certs');
 
 function stat(fileOrDir) {
@@ -36,8 +37,10 @@ function mkdir(dir) {
   }
 }
 
-mkdir(dataRoot);
+if (!exist(dataRoot)) mkdir(dataRoot);
 mkdir(certsRoot);
+
+console.log(dataRoot);
 
 class SettingManager extends EventEmitter {
   constructor() {

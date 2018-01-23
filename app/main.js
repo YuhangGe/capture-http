@@ -2,7 +2,7 @@
 const electron = require('electron');
 // Module to control application life.
 const app = electron.app;
-// const Menu = electron.Menu;
+const Menu = electron.Menu;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
 
@@ -40,7 +40,10 @@ function createWindow () {
   });
 }
 
-app.on('ready', initialize);
+app.on('ready', function() {
+  initialize();
+  createMenu();
+});
 app.on('window-all-closed', function () {
   app.quit();
 });
@@ -51,46 +54,27 @@ function initialize() {
   } 
 }
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
-// const template = [
-//   {
-//     label: 'Edit',
-//     submenu: [
-//       {role: 'undo'},
-//       {role: 'redo'},
-//       {type: 'separator'},
-//       {role: 'cut'},
-//       {role: 'copy'},
-//       {role: 'paste'},
-//       {role: 'pasteandmatchstyle'},
-//       {role: 'delete'},
-//       {role: 'selectall'}
-//     ]
-//   },
-//   {
-//     label: 'View',
-//     submenu: [
-//       {role: 'reload'},
-//       {role: 'forcereload'},
-//       {role: 'toggledevtools'},
-//       {type: 'separator'},
-//       {role: 'resetzoom'},
-//       {role: 'zoomin'},
-//       {role: 'zoomout'},
-//       {type: 'separator'},
-//       {role: 'togglefullscreen'}
-//     ]
-//   }
-// ];
+function createMenu() {
+  // In this file you can include the rest of your app's specific main process
+  // code. You can also put them in separate files and require them here.
+  const template = [
+    {
+      role: 'window',
+      submenu: [
+        {role: 'minimize'},
+        {role: 'close'}
+      ]
+    }
+  ];
 
-// if (process.platform === 'darwin') {
-//   template.unshift({
-//     label: app.getName(),
-//     submenu: [
-//       {role: 'quit'}
-//     ]
-//   });
-// }
-
-// Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  if (process.platform === 'darwin') {
+    template.unshift({
+      label: app.getName(),
+      submenu: [
+        {role: 'toggledevtools'},
+        {role: 'quit'}
+      ]
+    });
+  }
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}

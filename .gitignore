@@ -4,6 +4,7 @@ build
 /dist
 /cert
 /data
+/release
 /.tmp
 **/.DS_Store
 /.vscode

@@ -24,7 +24,12 @@ async function dev() {
   cacheFiles.push(...results);
   await html(server, ...results);
   
-  const electronApp = spawn(electron, ['.'], {stdio: 'inherit'});
+  const electronApp = spawn(electron, ['.'], {
+    stdio: 'inherit',
+    env: {
+      NODE_ENV: 'development'
+    }
+  });
   electronApp.on('close', code => {
     process.exit(code);
   });
