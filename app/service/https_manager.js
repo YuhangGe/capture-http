@@ -11,12 +11,14 @@ class Server {
     this.port = null;
     this._opts = opts;
   }
+
   _handleRequest(req, res) {
     this._opts.ps._handleRequest(req, res, {
       hostname: this._opts.hostname,
       port: this._opts.port
     });
   }
+
   start() {
     return new Promise((resolve, reject) => {
       ffp(10443, '127.0.0.1', (err, freePort) => {
@@ -34,6 +36,7 @@ class Server {
       });
     });
   }
+
   destroy() {
     this._server && this._server.close();
     this._ps = null;
@@ -47,12 +50,15 @@ class HTTPSManager extends EventEmitter {
     this._ps = null;
     this._sm = null;
   }
+
   registerProxyServer(ps) {
     this._ps = ps;
   }
+
   registerSettingManager(sm) {
     this._sm = sm;
   }
+
   async getServer(hostname, port) {
     const m = hostname.match(/[^.]+\.[^.]+$/);
     if (!m) {

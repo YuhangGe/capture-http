@@ -27,15 +27,16 @@ async function generate(reloadServer = EMPTY_SERVER, cssFile = 'css/capture-http
   let html = await _util.readFile(path.join(config.root, 'app/index.htm'), 'utf-8');
   if (!config.buildMode) {
     const idx = html.indexOf('<head>');
+    /* eslint no-template-curly-in-string:"off" */
     html = html.substring(0, idx + 6) + '\n<script>\n' + LIVE_CODE.replace('${PORT}', reloadServer.port) + '\n</script>\n' + html.substring(idx + 6);
   }
-  
+
   const jsLibs = [];
   const jsLibRenders = [];
   const cssLibs = [];
   const cssLibRenders = [];
   (await Promise.all(config.libs.map(lib => handleLib(lib)))).forEach(result => {
-    const [fn, cnt] =  result;
+    const [fn, cnt] = result;
     if (fn.endsWith('.js')) {
       jsLibs.push(fn);
       jsLibRenders.push(cnt);
@@ -50,9 +51,9 @@ async function generate(reloadServer = EMPTY_SERVER, cssFile = 'css/capture-http
     _write(cssLibs, cssLibRenders, '.css')
   ]);
 
-  const cssRenders = result[1] ? [ result[1], cssFile ] : [ cssFile ];
-  const jsRenders = result[0] ? [ result[0], jsFile ] : [ jsFile ];
-  
+  const cssRenders = result[1] ? [result[1], cssFile] : [cssFile];
+  const jsRenders = result[0] ? [result[0], jsFile] : [jsFile];
+
   html = html.replace(/<\/body>\s*<\/html>\s*$/, () => {
     return `
   ${cssRenders.map(f => `<link rel="stylesheet" href="${f}"/>`).join('\n  ')}
@@ -61,7 +62,6 @@ async function generate(reloadServer = EMPTY_SERVER, cssFile = 'css/capture-http
   });
   await _util.writeFile(path.join(distDir, 'index.html'), html);
   console.log('Generate', 'index.html'.green);
-
 }
 
 module.exports = generate;

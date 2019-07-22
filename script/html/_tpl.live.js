@@ -7,6 +7,7 @@
   var tryTimes = 0;
 
   function connect() {
+    /* eslint no-template-curly-in-string:"off" */
     ws = new WebSocket('ws://127.0.0.1:${PORT}', 'echo-protocol');
     afterConnect();
   }
@@ -41,5 +42,4 @@
   }
 
   connect();
-
 })();

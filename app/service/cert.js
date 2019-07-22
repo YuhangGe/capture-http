@@ -54,7 +54,6 @@ export function generateCA(attrs) {
 }
 
 export function generateDomainCert(domain, ca) {
-
   const caCert = pki.certificateFromPem(ca.certificate);
   const caKey = pki.privateKeyFromPem(ca.privateKey);
   const keys = pki.rsa.generateKeyPair(1024);
@@ -81,7 +80,7 @@ export function generateDomainCert(domain, ca) {
   }]);
 
   // sign certification request
-  csr.sign(keys.privateKey/*, forge.md.sha256.create()*/);
+  csr.sign(keys.privateKey/*, forge.md.sha256.create() */);
   console.log('Certification request (CSR) created.');
 
   const cert = pki.createCertificate();

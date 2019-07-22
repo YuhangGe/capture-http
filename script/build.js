@@ -10,7 +10,9 @@ const electronPackager = require('electron-packager');
 
 function pick(obj, ...props) {
   const newObj = {};
-  props.forEach(p => newObj[p] = obj[p]);
+  props.forEach(p => {
+    newObj[p] = obj[p];
+  });
   return newObj;
 }
 
@@ -27,7 +29,7 @@ async function build() {
   ]);
   await html(null, ...results);
   const newPkg = pick(
-    pkg, 'name', 
+    pkg, 'name',
     'productName',
     'description',
     'repository',
@@ -51,7 +53,7 @@ async function build() {
   console.log(result);
   await _util.exec(`cp ${path.join(cwd, 'app/main.js')} ${path.join(distRoot, 'main.js')}`);
   await _util.exec(`cp ${path.join(cwd, 'assets/icons/128x128.png')} ${distRoot}/icon.png`);
-  
+
   await electronPackager({
     dir: distRoot,
     icon: path.join(cwd, 'assets/icons/capture'),

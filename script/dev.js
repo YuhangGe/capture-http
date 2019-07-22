@@ -15,7 +15,7 @@ async function dev() {
   console.log('capture-http develop tool running...');
   await _util.mkdir(path.join(config.root, '.tmp/js'), true);
   await _util.mkdir(path.join(config.root, '.tmp/css'), true);
-  
+
   const server = await createReloadServer();
   const results = await Promise.all([
     less(),
@@ -23,7 +23,7 @@ async function dev() {
   ]);
   cacheFiles.push(...results);
   await html(server, ...results);
-  
+
   const electronApp = spawn(electron, ['.'], {
     stdio: 'inherit',
     env: {
@@ -40,12 +40,12 @@ async function dev() {
 
   function onSrcFileChange(file) {
     if (changeBusy) return;
-    (async function () {
+    (async function() {
       changeBusy = true;
       const ext = path.extname(file);
-      if ('.htm' === ext) {
+      if (ext === '.htm') {
         await html(cacheFiles[0], cacheFiles[1], cacheFiles[2], server.port);
-      } else if ('.less' === ext) {
+      } else if (ext === '.less') {
         await less(file);
       } else if (['.js', '.jsx', '.html'].indexOf(ext) >= 0) {
         await rollup(file);
@@ -69,7 +69,6 @@ async function dev() {
       .on('change', handler)
       .on('unlink', handler);
   }
-
 }
 
 module.exports = dev;

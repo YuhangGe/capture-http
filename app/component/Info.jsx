@@ -2,19 +2,19 @@ import React from 'react';
 import QRCode from 'qrcode';
 import proxyServer from '../service/proxy_server';
 import settingManager from '../service/setting_manager';
-
 const ip = require('ip');
-
 export default class Info extends React.Component {
   constructor(props) {
     super(props);
     this.$psCnavas = null;
     this.$cdCanvas = null;
   }
+
   componentDidMount() {
     this.drawProxyServerQR();
     this.drawCertDownloadQR();
   }
+
   drawProxyServerQR() {
     this.$psCanvas && QRCode.toCanvas(this.$psCanvas, JSON.stringify({
       type: 'HTTP',
@@ -24,16 +24,19 @@ export default class Info extends React.Component {
       width: 200
     });
   }
+
   drawCertDownloadQR() {
     this.$cdCanvas && QRCode.toCanvas(
-      this.$cdCanvas, 
+      this.$cdCanvas,
       `http://${ip.address()}:${proxyServer.certDownloadServer.port}`,
       {
         width: 200
       }
     );
   }
+
   render() {
+    /* eslint no-return-assign:"off" */
     return (
       <ul className="container">
         <li>

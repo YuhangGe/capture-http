@@ -8,8 +8,8 @@ const appRoot = path.join(config.root, 'app');
 async function _render(cnt) {
   const result = await new Promise(resolve => {
     less.render(cnt, {
-      paths: [ path.join(appRoot, 'style') ],
-      plugins: (!config.buildMode || config.noCompress) ? [] : [ new LessPluginCleanCSS({ advanced: true }) ],
+      paths: [path.join(appRoot, 'style')],
+      plugins: (!config.buildMode || config.noCompress) ? [] : [new LessPluginCleanCSS({ advanced: true })],
       sourceMap: (!config.buildMode || config.noCompress) ? {
         sourceMapBasepath: appRoot,
         sourceMapURL: `${config.pkgName}.css.map`
@@ -17,7 +17,8 @@ async function _render(cnt) {
     }).then(resolve, resolve);
   });
   if (!result.css) throw new Error(result.message);
-  return await _write(config.pkgName, result);
+  const outputName = await _write(config.pkgName, result);
+  return outputName;
 }
 
 async function _write(outputName, result) {

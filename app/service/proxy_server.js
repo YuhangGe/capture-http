@@ -3,14 +3,12 @@ import { Record } from './record';
 import pick from 'lodash-es/pick';
 import HTTPSManager from './https_manager';
 import settingManager from './setting_manager';
-
 const http = require('http');
 const https = require('https');
 const net = require('net');
 const url = require('url');
 const fp = require('find-free-port');
 const ip = require('ip');
-
 class ProxyServer extends EventEmitter {
   constructor() {
     super();
@@ -24,36 +22,42 @@ class ProxyServer extends EventEmitter {
       mime: '',
       method: ''
     };
-    this._records = [ ];
+    this._records = [];
     this.certDownloadServer = {
       port: null,
       server: null
     };
   }
+
   clearRecords() {
     this._records.forEach(r => r.destroy());
     this._records.length = 0;
     this.emit('records-changed');
   }
+
   get isCapturing() {
     return this._capturing;
   }
+
   startCapture() {
     if (this._capturing) return;
     this._capturing = true;
     this.emit('capture-changed', this._capturing);
   }
+
   stopCapture() {
     if (!this._capturing) return;
     this._capturing = false;
     this.emit('capture-changed', this._capturing);
   }
+
   initialize() {
     return Promise.all([
       this.startProxyServer(),
       this.startCertDownloadServer()
     ]);
   }
+
   startProxyServer() {
     return new Promise((resolve, reject) => {
       if (this.port) return resolve();
@@ -71,6 +75,7 @@ class ProxyServer extends EventEmitter {
       });
     });
   }
+
   startCertDownloadServer() {
     return new Promise((resolve, reject) => {
       if (this.certDownloadServer.port) return resolve();
@@ -87,6 +92,7 @@ class ProxyServer extends EventEmitter {
       });
     });
   }
+
   _handleDownloadCertRequest(req, res) {
     if (!settingManager.ca) {
       res.writeHead(404);
@@ -100,8 +106,9 @@ class ProxyServer extends EventEmitter {
     res.write(settingManager.ca.certificate);
     res.end();
   }
+
   _proxy(cReq, cRes, httpsInfo, record = null) {
-    const u = url.parse(cReq.url);
+    const u = new url.URL(cReq.url);
     const options = {
       hostname: httpsInfo ? httpsInfo.hostname : u.hostname,
       port: httpsInfo ? (httpsInfo.port || 443) : (u.port || 80),
@@ -125,14 +132,14 @@ class ProxyServer extends EventEmitter {
       pRes.on('error', err => {
         console.error(err);
         if (record) {
-          record.error = err;          
+          record.error = err;
         }
         cRes.end();
       });
     }).on('error', err => {
       console.error(err);
       if (record) {
-        record.error = err;          
+        record.error = err;
       }
       cRes.writeHead(500);
       cRes.end();
@@ -145,16 +152,18 @@ class ProxyServer extends EventEmitter {
     cReq.on('error', err => {
       console.error(err);
       if (record) {
-        record.error = err;          
+        record.error = err;
       }
       pReq.end();
       cRes.end();
     });
   }
+
   _addRecord(r) {
     this._records.push(r);
     this.emit('records-changed');
   }
+
   _shouldRecord(req, isHttps = false) {
     const {
       url,
@@ -162,7 +171,7 @@ class ProxyServer extends EventEmitter {
       protocol
     } = this.filter;
     const shouldProtocol = isHttps ? 'https' : 'http';
-    if (protocol && protocol !== 'all' && shouldProtocol !== protocol ) {
+    if (protocol && protocol !== 'all' && shouldProtocol !== protocol) {
       return false;
     }
     if (method && method !== 'all' && req.method !== method) {
@@ -173,6 +182,7 @@ class ProxyServer extends EventEmitter {
     }
     return true;
   }
+
   _shouldPushRecord(status, mime, record) {
     const res = record.response;
     if (!res) return false;
@@ -184,17 +194,18 @@ class ProxyServer extends EventEmitter {
       return false;
     }
     const ct = res.headers['content-type'];
-    switch(mime) {
-    case 'json':
-      return /\b(json)\b/.test(ct);
-    case 'image':
-      return ct.startsWith('image/');
-    case 'text':
-      return ct.startsWith('text/') || /\b(json|xml|javascript)\b/.test(ct);
-    default:
-      return false;
+    switch (mime) {
+      case 'json':
+        return /\b(json)\b/.test(ct);
+      case 'image':
+        return ct.startsWith('image/');
+      case 'text':
+        return ct.startsWith('text/') || /\b(json|xml|javascript)\b/.test(ct);
+      default:
+        return false;
     }
   }
+
   _handleRequest(cReq, cRes, httpsInfo = null) {
     if (!this._capturing) {
       return this._proxy(cReq, cRes, httpsInfo);
@@ -206,7 +217,7 @@ class ProxyServer extends EventEmitter {
       status,
       mime
     } = this.filter;
-    const record = new Record(cReq, cRes); 
+    const record = new Record(cReq, cRes);
     const onRSC = state => {
       if (state !== 'error' && state !== 'finish') return;
       record.off('state-changed', onRSC);
@@ -216,16 +227,16 @@ class ProxyServer extends EventEmitter {
         record.destroy();
       }
     };
-    if (status && status !== 'all' || mime && mime !== 'all') {
+    if ((status && status !== 'all') || (mime && mime !== 'all')) {
       record.on('state-changed', onRSC);
     } else {
       this._addRecord(record);
     }
     return this._proxy(cReq, cRes, httpsInfo, record);
   }
-  
+
   _handleConnect(cReq, cSock) {
-    const u = url.parse('http://' + cReq.url);
+    const u = new url.URL('http://' + cReq.url);
     if (!this._capturing) {
       this._pipeConnect(cSock, u.port || 443, u.hostname);
       return;
@@ -239,7 +250,7 @@ class ProxyServer extends EventEmitter {
       const r = new Record();
       r.host = u.hostname + (u.port.toString() === '443' ? '' : `:${u.port}`);
       r.isHttps = true;
-      this._addRecord(r);      
+      this._addRecord(r);
       const onFinish = () => {
         r.duration = Date.now() - r.startAt;
         r.state = 'finish';
@@ -250,18 +261,19 @@ class ProxyServer extends EventEmitter {
       pSock.on('error', onFinish);
     });
   }
+
   _pipeConnect(cSock, port, host) {
-    const pSock = net.connect(port, host, function () {
+    const pSock = net.connect(port, host, function() {
       cSock.write('HTTP/1.1 200 Connection Established\r\n\r\n');
       pSock.pipe(cSock);
     });
-    cSock.pipe(pSock);    
+    cSock.pipe(pSock);
     const onErr = err => {
       console.error(err);
       cSock.end();
       pSock.end();
       pSock.removeListener('error', onErr);
-      cSock.removeListener('error', onErr);      
+      cSock.removeListener('error', onErr);
     };
     pSock.on('error', onErr);
     cSock.on('error', onErr);
@@ -272,5 +284,4 @@ class ProxyServer extends EventEmitter {
 // singleton
 const ps = new ProxyServer();
 HTTPSManager.registerProxyServer(ps);
-
 export default ps;

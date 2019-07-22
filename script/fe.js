@@ -26,7 +26,7 @@ if (!map.hasOwnProperty(cmd)) {
 process.env.BUILD_MODE = cmd === 'build' ? 'true' : 'false';
 
 try {
-  require(`./${map[cmd]}`)().catch(_exit);  
-} catch(ex) {
+  require(`./${map[cmd]}`)().catch(_exit);
+} catch (ex) {
   _exit(ex);
 }

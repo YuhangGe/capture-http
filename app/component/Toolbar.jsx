@@ -1,5 +1,5 @@
 import React from 'react';
-import { 
+import {
   IconButton,
   TextField,
   TooltipHost,
@@ -11,7 +11,6 @@ import {
 import Setting from './Setting';
 import Info from './Info';
 import proxyServer from '../service/proxy_server';
-
 const PROTOCOLS = [
   { key: 'all', text: '全部' },
   { key: 'http', text: 'HTTP' },
@@ -19,18 +18,18 @@ const PROTOCOLS = [
 ];
 const MIMES = [
   { key: 'all', text: '全部' },
-  { key: 'image', text: '图片'},
-  { key: 'text', text: '文本'},
-  { key: 'json', text: 'JSON'}
+  { key: 'image', text: '图片' },
+  { key: 'text', text: '文本' },
+  { key: 'json', text: 'JSON' }
 ];
 const METHODS = [
   { key: 'all', text: '全部' },
-  { key: 'get', text: 'GET'},
-  { key: 'post', text: 'POST'},
-  { key: 'put', text: 'PUT'},
-  { key: 'delete', text: 'DELETE'},
-  { key: 'head', text: 'HEAD'},
-  { key: 'option', text: 'OPTION'}
+  { key: 'get', text: 'GET' },
+  { key: 'post', text: 'POST' },
+  { key: 'put', text: 'PUT' },
+  { key: 'delete', text: 'DELETE' },
+  { key: 'head', text: 'HEAD' },
+  { key: 'option', text: 'OPTION' }
 ];
 export default class Toolbar extends React.Component {
   constructor(props) {
@@ -43,30 +42,39 @@ export default class Toolbar extends React.Component {
     this.$canvas = null;
     this._captureChangedHandler = this._onCaptureChanged.bind(this);
   }
+
   componentDidMount() {
     proxyServer.on('capture-changed', this._captureChangedHandler);
   }
+
   componentWillUnmount() {
-    proxyServer.off('capture-changed', this._captureChangedHandler);    
+    proxyServer.off('capture-changed', this._captureChangedHandler);
   }
+
   _onCaptureChanged() {
     this.setState({});
   }
+
   showQR() {
     this.setState({ showInfo: true });
   }
+
   closeQR() {
     this.setState({ showInfo: false });
   }
+
   openSetting() {
-    this.setState( { showSetting: true });
+    this.setState({ showSetting: true });
   }
+
   closeSetting() {
     this.setState({ showSetting: false });
   }
+
   clear() {
     proxyServer.clearRecords();
   }
+
   toggle() {
     if (proxyServer.isCapturing) {
       proxyServer.stopCapture();
@@ -74,6 +82,7 @@ export default class Toolbar extends React.Component {
       proxyServer.startCapture();
     }
   }
+
   onFilterChanged(prop, val) {
     const filter = this.state.filter;
     filter[prop] = val.key || val;
@@ -81,6 +90,7 @@ export default class Toolbar extends React.Component {
       filter
     });
   }
+
   render() {
     const { filter } = this.state;
     return (
@@ -91,7 +101,7 @@ export default class Toolbar extends React.Component {
         >
           <IconButton
             onClick={this.toggle.bind(this)}
-            style={{color: proxyServer.isCapturing ? '#e81123' : null} }
+            style={{ color: proxyServer.isCapturing ? '#e81123' : null } }
             iconProps={ { iconName: proxyServer.isCapturing ? 'Stop' : 'Play' } }
           />
         </TooltipHost>
@@ -101,51 +111,51 @@ export default class Toolbar extends React.Component {
         >
           <IconButton
             onClick={this.clear.bind(this)}
-            iconProps={ { iconName: 'Clear' } } 
+            iconProps={ { iconName: 'Clear' } }
           />
         </TooltipHost>
         <i/>
         <Dropdown
-          placeHolder='Protocol'
-          style={{marginRight: 8, width: 102, marginLeft: 8}}
+          placeholder='Protocol'
+          style={{ marginRight: 8, width: 102, marginLeft: 8 }}
           selectedKey={filter.protocol}
-          onChanged={this.onFilterChanged.bind(this, 'protocol')}
+          onChange={this.onFilterChanged.bind(this, 'protocol')}
           options={PROTOCOLS}
         />
         <Dropdown
-          placeHolder='Method'
-          style={{marginRight: 8, width: 100 }}
+          placeholder='Method'
+          style={{ marginRight: 8, width: 100 }}
           selectedKey={filter.method}
-          onChanged={this.onFilterChanged.bind(this, 'method')}
+          onChange={this.onFilterChanged.bind(this, 'method')}
           options={METHODS}
         />
         <TextField
           placeholder='URL Filter'
           className="i-url"
           value={filter.url}
-          onChanged={this.onFilterChanged.bind(this, 'url')}
+          onChange={this.onFilterChanged.bind(this, 'url')}
         />
         <TextField
           className="i-status"
           placeholder='Status'
           value={filter.status}
-          onChanged={this.onFilterChanged.bind(this, 'status')}
+          onChange={this.onFilterChanged.bind(this, 'status')}
         />
         <Dropdown
-          style={{marginRight: 8, width: 86}}
-          placeHolder='Mime'
+          style={{ marginRight: 8, width: 86 }}
+          placeholder='Mime'
           selectedKey={filter.mime}
-          onChanged={this.onFilterChanged.bind(this, 'mime')}
+          onChange={this.onFilterChanged.bind(this, 'mime')}
           options={MIMES}
         />
         <i/>
         <IconButton
           onClick={this.showQR.bind(this)}
-          iconProps={ { iconName: 'Info2' } } 
+          iconProps={ { iconName: 'Info2' } }
         />
         <IconButton
           onClick={this.openSetting.bind(this)}
-          iconProps ={ {iconName: 'Settings'} }
+          iconProps ={ { iconName: 'Settings' } }
         />
         <Dialog
           hidden={ !this.state.showInfo }
@@ -167,11 +177,11 @@ export default class Toolbar extends React.Component {
           dialogContentProps={ {
             type: DialogType.largeHeader,
             title: (
-              <span style={{display: 'flex', alignItems: 'center'}}>
-                <span style={{flex: 1}}>系统配置</span>
+              <span style={{ display: 'flex', alignItems: 'center' }}>
+                <span style={{ flex: 1 }}>系统配置</span>
                 <IconButton
                   onClick={this.closeSetting.bind(this)}
-                  iconProps={ { iconName: 'ChromeClose', style: {color: '#fff'} } } 
+                  iconProps={ { iconName: 'ChromeClose', style: { color: '#fff' } } }
                 />
               </span>
             )

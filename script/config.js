@@ -3,7 +3,7 @@ const execSync = require('child_process').execSync;
 const pEnv = process.env;
 const env = {};
 
-for(const k in pEnv) {
+for (const k in pEnv) {
   if (k.startsWith('ENV_')) {
     let v = pEnv[k];
     if (/^\d+$/.test(v)) v = Number(v);
@@ -14,7 +14,7 @@ for(const k in pEnv) {
 module.exports = {
   pkgName: 'caputre-http',
   buildMode: pEnv.BUILD_MODE === 'true',
-  buildHash: (function () {
+  buildHash: (function() {
     const output = execSync('git log -n 1', {
       cwd: __dirname
     });
@@ -62,6 +62,6 @@ module.exports = {
     notify: 'PureNotify'
   },
   rollupAlias: {
-    
+
   }
 };

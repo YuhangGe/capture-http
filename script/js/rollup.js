@@ -2,21 +2,21 @@ const path = require('path');
 const uglify = require('uglify-es');
 const _util = require('../util');
 const rollup = require('rollup');
-const string = require('rollup-plugin-string');
+const { string } = require('rollup-plugin-string');
 const alias = require('rollup-plugin-alias');
 const buble = require('rollup-plugin-buble');
 const nodeResolve = require('rollup-plugin-node-resolve');
+const commonjs = require('rollup-plugin-commonjs');
 const config = require('../config');
 
 const rollupConfig = {
-  interop: false,
   external: config.rollupExternal,
   input: path.join(config.root, 'app/index.jsx'),
-  file: path.join(config.root, '.tmp/js', config.pkgName + '.js'),  
   output: {
+    file: path.join(config.root, '.tmp/js', config.pkgName + '.js'),
     format: 'iife',
     globals: config.rollupGlobals,
-    sourcemap: !config.buildMode   
+    sourcemap: !config.buildMode
   },
   cache: null,
   plugins: [
@@ -29,9 +29,9 @@ const rollupConfig = {
     }),
     alias(config.rollupAlias),
     nodeResolve({
-      jsnext: true,
-      browser: true
+      mainFields: ['jsnext:main', 'module', 'main', 'browser']
     }),
+    commonjs(),
     require('./ext')({
       extensions: ['.js', '.jsx']
     })
@@ -44,10 +44,10 @@ module.exports = async function compile() {
     const bundle = await rollup.rollup(rollupConfig);
     rollupConfig.cache = bundle;
     await bundle.write(rollupConfig);
-    console.log('Rollup finish, generate', (config.pkgName + '.js').green);    
-  } catch(ex) {
+    console.log('Rollup finish, generate', (config.pkgName + '.js').green);
+  } catch (ex) {
     console.log(`Rollup error: ${ex.message.red}`);
-    console.log(ex);    
+    console.log(ex);
   }
   if (!config.buildMode) {
     return 'js/' + config.pkgName + '.js';

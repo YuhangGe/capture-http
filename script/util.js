@@ -8,7 +8,7 @@ const crypto = require('crypto');
 const DEBUG_IF_REGEXP = /<!--\s+if\s+debug\s+-->([\d\D]+?)<!--\s+else\s+-->([\d\D]+?)<!--\s+end\s+if\s+-->/ig;
 
 function wrapFnPromise(fn, ctx = null) {
-  return function (...args) {
+  return function(...args) {
     return new Promise((resolve, reject) => {
       args.push(function(err, ...rtn) {
         if (err) {
@@ -22,14 +22,13 @@ function wrapFnPromise(fn, ctx = null) {
   };
 }
 
-const exists = function (file) {
+const exists = function(file) {
   return new Promise((resolve) => {
     fs.access(file, err => {
-      resolve(err ? false : true);
+      resolve(!err);
     });
   });
 };
-
 
 function mkdir(dir, loop = false) {
   return new Promise((resolve, reject) => {
@@ -74,30 +73,30 @@ function copy(source, target) {
 }
 
 function escapeHtml(string) {
-  return ('' + string).replace(/["'\\\n\r\u2028\u2029]/g, function (character) {
+  return ('' + string).replace(/["'\\\n\r\u2028\u2029]/g, function(character) {
     // Escape all characters not included in SingleStringCharacters and
     // DoubleStringCharacters on
     // http://www.ecma-international.org/ecma-262/5.1/#sec-7.8.4
     switch (character) {
-    case '"':
-    case '\'':
-    case '\\':
-      return '\\' + character;
+      case '"':
+      case '\'':
+      case '\\':
+        return '\\' + character;
       // Four possible LineTerminator characters need to be escaped:
-    case '\n':
-      return '\\n';
-    case '\r':
-      return '\\r';
-    case '\u2028':
-      return '\\u2028';
-    case '\u2029':
-      return '\\u2029';
+      case '\n':
+        return '\\n';
+      case '\r':
+        return '\\r';
+      case '\u2028':
+        return '\\u2028';
+      case '\u2029':
+        return '\\u2029';
     }
   });
 }
 
 function execCommand(...args) {
-  return new Promise((resolve, reject)=> {
+  return new Promise((resolve, reject) => {
     exec(...args, (err, stdout, stderr) => {
       if (err) {
         reject(err.message);

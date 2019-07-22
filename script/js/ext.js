@@ -9,15 +9,15 @@ async function addExtensionIfNecessary(file, extensions) {
     if (_st.isDirectory()) {
       file = path.join(file, 'index');
     }
-  } catch(ex) {
+  } catch (ex) {
     // ignore
   }
-  for(let i = 0; i < extensions.length; i++) {
+  for (let i = 0; i < extensions.length; i++) {
     const _file = `${file}${extensions[i]}`;
     try {
       const _stat = await _util.stat(_file);
       if (_stat.isFile()) return _file;
-    } catch(ex) {
+    } catch (ex) {
       // ignore
     }
   }
@@ -26,29 +26,29 @@ async function addExtensionIfNecessary(file, extensions) {
 
 const KNOWN_EXT = /\.((js)|(jsx)|(css)|(html)|(less)|(sass))$/;
 
-module.exports = function (options) {
+module.exports = function(options) {
   let extensions = options.extensions || ['.js'];
   if (!Array.isArray(extensions)) {
     extensions = [extensions];
   }
   return {
     name: 'extensions',
-    resolveId (importee, importer) {
+    resolveId(importee, importer) {
       if (KNOWN_EXT.test(importee)) {
         return null;
       }
       return new Promise(resolve => {
-        if ( path.isAbsolute( importee ) ) {
+        if (path.isAbsolute(importee)) {
           addExtensionIfNecessary(
-            path.resolve( importee ),
+            path.resolve(importee),
             extensions
           ).then(resolve);
-        } else if ( importer === undefined ) {
+        } else if (importer === undefined) {
           addExtensionIfNecessary(
             path.resolve(config.root, importee),
             extensions
           ).then(resolve);
-        } else if ( importee[0] !== '.' ) {
+        } else if (importee[0] !== '.') {
           resolve(null);
         } else {
           addExtensionIfNecessary(

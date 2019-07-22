@@ -15,7 +15,7 @@ const certsRoot = path.join(dataRoot, 'certs');
 function stat(fileOrDir) {
   try {
     return fs.statSync(fileOrDir);
-  } catch(ex) {
+  } catch (ex) {
     return null;
   }
 }
@@ -24,7 +24,7 @@ function exist(fileOrDir) {
   try {
     fs.accessSync(fileOrDir);
     return true;
-  } catch(ex) {
+  } catch (ex) {
     return false;
   }
 }
@@ -32,7 +32,7 @@ function exist(fileOrDir) {
 function mkdir(dir) {
   try {
     fs.accessSync(dir);
-  } catch(ex) {
+  } catch (ex) {
     fs.mkdirSync(dir);
   }
 }
@@ -47,7 +47,9 @@ class SettingManager extends EventEmitter {
     super();
     this._ca = null;
     this._hosts = null;
+    this._proxies = null;
   }
+
   get ca() {
     if (!this._ca) {
       const certFile = path.join(dataRoot, 'ca.cert.pem');
@@ -63,6 +65,7 @@ class SettingManager extends EventEmitter {
     }
     return this._ca;
   }
+
   _writeHosts() {
     fs.writeFileSync(
       path.join(dataRoot, 'hosts.json'),
@@ -70,6 +73,7 @@ class SettingManager extends EventEmitter {
     );
     return this._hosts;
   }
+
   get hosts() {
     if (this._hosts) return this._hosts;
     const file = path.join(dataRoot, 'hosts.json');
@@ -82,11 +86,12 @@ class SettingManager extends EventEmitter {
       this._hosts = JSON.parse(fs.readFileSync(file, 'utf-8'));
       if (!Array.isArray(this._hosts)) return _nh();
       else return this._hosts;
-    } catch(ex) {
+    } catch (ex) {
       console.error(ex);
       return _nh();
     }
   }
+
   addHost(host) {
     try {
       const pem = generateDomainCert(host.domain, this._ca);
@@ -97,7 +102,7 @@ class SettingManager extends EventEmitter {
       host.privateKey = pem.privateKey;
       host.publicKey = pem.publicKey;
       host.certificate = pem.certificate;
-    } catch(ex) {
+    } catch (ex) {
       console.error(ex);
       return false;
     }
@@ -105,6 +110,7 @@ class SettingManager extends EventEmitter {
     this._writeHosts();
     return true;
   }
+
   rmHost(host) {
     const idx = this._hosts.indexOf(host);
     idx >= 0 && this._hosts.splice(idx, 1);
@@ -112,20 +118,71 @@ class SettingManager extends EventEmitter {
       const name = host.domain.substring(2);
       fs.unlinkSync(path.join(certsRoot, name + '.cert.pem'));
       fs.unlinkSync(path.join(certsRoot, name + '.key.pem'));
-      fs.unlinkSync(path.join(certsRoot, name + '.key.pub.pem'));  
-    } catch(ex) {
+      fs.unlinkSync(path.join(certsRoot, name + '.key.pub.pem'));
+    } catch (ex) {
       console.error(ex);
     }
     this._writeHosts();
   }
+
   enableHost(host) {
     host.enabled = true;
     this._writeHosts();
   }
+
   disableHost(host) {
     host.enabled = false;
     this._writeHosts();
   }
+
+  addProxy(proxy) {
+    this._proxies.push(proxy);
+    this._writeProxies();
+    return true;
+  }
+
+  rmProxy(proxy) {
+    const idx = this._proxies.indexOf(proxy);
+    idx >= 0 && this._proxies.splice(idx, 1);
+    this._writeProxies();
+  }
+
+  enableProxy(proxy) {
+    proxy.enabled = true;
+    this._writeProxies();
+  }
+
+  disableProxy(proxy) {
+    proxy.enabled = false;
+    this._writeProxies();
+  }
+
+  get proxies() {
+    if (this._proxies) return this._proxies;
+    const file = path.join(dataRoot, 'proxies.json');
+    const _nh = () => {
+      this._proxies = [];
+      return this._writeProxies();
+    };
+    if (!exist(file)) return _nh();
+    try {
+      this._proxies = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      if (!Array.isArray(this._proxies)) return _nh();
+      else return this._proxies;
+    } catch (ex) {
+      console.error(ex);
+      return _nh();
+    }
+  }
+
+  _writeProxies() {
+    fs.writeFileSync(
+      path.join(dataRoot, 'proxies.json'),
+      JSON.stringify(this._proxies)
+    );
+    return this._proxies;
+  }
+
   generateCA(attrs) {
     return new Promise((resolve, reject) => {
       try {
@@ -139,7 +196,7 @@ class SettingManager extends EventEmitter {
           privateKey: pem.privateKey
         };
         resolve(this._ca);
-      } catch(ex) {
+      } catch (ex) {
         console.error(ex);
         reject(ex);
       }
@@ -152,4 +209,3 @@ const sm = new SettingManager();
 HTTPSManager.registerSettingManager(sm);
 
 export default sm;
-

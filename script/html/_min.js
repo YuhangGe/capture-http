@@ -38,7 +38,7 @@ async function handleLib(lib) {
     let _st;
     try {
       _st = await _util.stat(minFile);
-    } catch(ex) {
+    } catch (ex) {
       console.log(ex);
       throw new Error(minFile, 'not found.');
     }
@@ -65,7 +65,6 @@ async function handleLib(lib) {
   }
 
   return [`${pkg.name}-${pkg.version}.min${ext}`, await _util.readFile(minFile, 'utf-8')];
-
 }
 
 async function minLib(file, bn, pkg, config, ext) {
@@ -74,9 +73,9 @@ async function minLib(file, bn, pkg, config, ext) {
   if (await _util.exists(minFile)) {
     return minFile;
   }
-  console.log(`${pkg.name}-${pkg.version}.min${ext}`.yellow,  `not found, use ${ext === '.js' ? 'uglify-js' : 'clean-css'} to generate it.`);
+  console.log(`${pkg.name}-${pkg.version}.min${ext}`.yellow, `not found, use ${ext === '.js' ? 'uglify-js' : 'clean-css'} to generate it.`);
   let result = '';
-  if (ext === '.js')  {
+  if (ext === '.js') {
     const source = await _util.readFile(file, 'utf-8');
     const r = UglifyJS.minify(source);
     if (r.error) {

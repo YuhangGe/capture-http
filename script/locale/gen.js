@@ -4,7 +4,7 @@ const path = require('path');
 const componentPath = path.join(config.entryRoot, 'component');
 const entryModulePath = path.join(config.entryRoot, 'skeleton/module');
 const modulePath = path.join(config.root, 'module');
-const distDir = path.join(config.root, config.buildMode ? 'dist' :  '.tmp', 'js');
+const distDir = path.join(config.root, config.buildMode ? 'dist' : '.tmp', 'js');
 
 async function readModule(m, dir, prefix) {
   if (typeof prefix === 'undefined') prefix = m;
@@ -13,7 +13,7 @@ async function readModule(m, dir, prefix) {
   const lDir = path.join(dir, m, 'locale');
   try {
     st = await _util.stat(lDir);
-  } catch(ex) {
+  } catch (ex) {
     if (ex.code === 'ENOENT') {
       return null;
     }
@@ -30,7 +30,7 @@ async function readModule(m, dir, prefix) {
     if (!result) return;
     let dict = dicts[result.locale];
     if (!dict) dict = dicts[result.locale] = {};
-    for(const key in result.dict) {
+    for (const key in result.dict) {
       if (dict[key]) throw new Error(`Locale dict key ${key} duplicated`);
       dict[key] = result.dict[key];
     }
@@ -48,7 +48,7 @@ async function readLocale(locale, mDir, prefix = '') {
   }
   const output = {};
   const files = await _util.readdir(dir);
-  for(let k = 0; k < files.length; k++) {
+  for (let k = 0; k < files.length; k++) {
     const file = files[k];
     if (!/\.json$/.test(file)) {
       continue;
@@ -56,7 +56,7 @@ async function readLocale(locale, mDir, prefix = '') {
     const cnt = await _util.readFile(path.join(dir, file));
     try {
       const dict = JSON.parse(cnt);
-      for(const key in dict) {
+      for (const key in dict) {
         let okey = file === '_.json' ? key : file.substring(0, file.lastIndexOf('.') + 1) + key;
         okey = (prefix ? prefix + '.' : '') + okey;
         if (output[okey]) {
@@ -64,7 +64,7 @@ async function readLocale(locale, mDir, prefix = '') {
         }
         output[okey] = dict[key];
       }
-    } catch(ex) {
+    } catch (ex) {
       console.error(`Parse locale json file ${path.relative(config.root, path.join(dir, file)).red} error.`);
       console.error(ex);
     }
@@ -80,10 +80,10 @@ async function bundle(arr, outputName, mergeNgLocale = false) {
   const locales = {};
   arr.forEach(result => {
     if (!result) return;
-    for(const lang in result) {
+    for (const lang in result) {
       let dict = locales[lang];
       if (!dict) dict = locales[lang] = {};
-      for(const key in result[lang]) {
+      for (const key in result[lang]) {
         if (dict[key]) throw new Error(`Locale dict key ${key} duplicated`);
         dict[key] = result[lang][key];
       }
@@ -91,18 +91,18 @@ async function bundle(arr, outputName, mergeNgLocale = false) {
   });
   const hash = config.buildMode ? '.' + (await _util.getGitHash()) : '';
   const localeFileTemplate = `${outputName}.locale.\${locale}${hash}.js`;
-  for(const lang in locales) {
+  for (const lang in locales) {
     let tpl = `return ${JSON.stringify(locales[lang], null, 2)};`;
     if (mergeNgLocale) {
       const ngLocale = await _util.readFile(path.join(config.entryRoot, `component/global/locale/${lang}/ng_locale_${lang}.js`));
       tpl = ngLocale + '\n' + tpl;
     }
+    /* eslint no-template-curly-in-string:"off" */
     await _util.writeFile(path.join(distDir, localeFileTemplate.replace('${locale}', lang)), tpl);
     console.log('Generate LOCALE', localeFileTemplate.replace('${locale}', lang).green);
   }
 
   return `js/${localeFileTemplate}`;
- 
 }
 
 const files = { entry: null, main: null };

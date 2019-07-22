@@ -8,7 +8,7 @@ function reload() {
   liveReloadClients.forEach(ws => {
     try {
       ws.send('reload');
-    } catch(ex) {
+    } catch (ex) {
       console.log(ex);
     }
   });
@@ -16,9 +16,9 @@ function reload() {
 
 function initLiveReload(server) {
   const wServer = new WSServer({
-    server,
+    server
   });
-  wServer.on('connection',  ws => {
+  wServer.on('connection', ws => {
     liveReloadClients.push(ws);
     ws.on('close', _des);
     ws.on('error', _des);
@@ -39,7 +39,7 @@ async function createDevServer() {
     response.writeHead(404);
     response.end();
   });
-  
+
   initLiveReload(server);
   server.reload = reload;
   await new Promise((resolve, reject) => {
@@ -52,9 +52,8 @@ async function createDevServer() {
       });
     });
   });
-  
+
   return server;
 }
 
 module.exports = createDevServer;
-

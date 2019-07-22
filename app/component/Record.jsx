@@ -3,7 +3,6 @@ import moment from 'moment';
 import {
   Icon
 } from 'fabric';
-
 function formatDuration(v) {
   if (v < 1000) return v + 'ms';
   v /= 1000;
@@ -17,18 +16,23 @@ export default class Record extends React.Component {
     this._recordChangedHandler = this._onRecordChanged.bind(this);
     this._record = props.record;
   }
+
   componentDidMount() {
     this._record.on('state-changed', this._recordChangedHandler);
   }
+
   componentWillUnmount() {
     this._record.off('state-changed', this._recordChangedHandler);
   }
+
   _onRecordChanged() {
     this.setState({});
   }
+
   _onClick() {
     this.props.onClick(this._record);
   }
+
   render() {
     const r = this._record;
     return (
@@ -43,7 +47,7 @@ export default class Record extends React.Component {
         </div>
         <div className="path">
           {r.request ? r.path : (
-            <span style={{color: '#666'}}>encoded https request/response</span>
+            <span style={{ color: '#666' }}>encoded https request/response</span>
           )}
         </div>
         <div className="info">

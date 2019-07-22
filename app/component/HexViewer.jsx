@@ -6,8 +6,10 @@ export default class HexViewer extends React.Component {
     super(props);
     this.$hexViewer = null;
   }
+
   componentDidMount() {
     if (!this.$hexViewer) return;
+    /* eslint new-cap:"off" */
     const grid = new JSHexGrid.grid({
       rows: this.props.rows || 12,
       container: this.$hexViewer,
@@ -21,7 +23,7 @@ export default class HexViewer extends React.Component {
         background: '#fff'
       })
     });
-    if(grid) {
+    if (grid) {
       const dimensions = grid.getDimensions();
       this.$hexViewer.innerHTML = '';
       this.$hexViewer.style.width = dimensions.width + 'px';
@@ -30,10 +32,13 @@ export default class HexViewer extends React.Component {
       grid.showFrom(0);
     }
   }
+
   componentWillUnmount() {
     this.$hexViewer && (this.$hexViewer.innerHTML = '');
   }
+
   render() {
+    /* eslint no-return-assign:"off" */
     return (
       <div
         className="hex-viewer-container"
@@ -42,5 +47,3 @@ export default class HexViewer extends React.Component {
     );
   }
 }
-
-

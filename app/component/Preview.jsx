@@ -1,7 +1,6 @@
 import React from 'react';
 const hijs = require('highlight.js');
 const zlib = require('zlib');
-
 function isText(ct) {
   return ct.startsWith('text/') || /\b(json|xml|javascript)\b/.test(ct);
 }
@@ -32,7 +31,7 @@ export default class Preview extends React.Component {
       const maxLen = 4 * 1024;
       return (
         <div className="preview text">
-          <div dangerouslySetInnerHTML={{__html: hijs.highlightAuto(code.length > maxLen ? code.substr(0, maxLen) : code).value}}/>
+          <div dangerouslySetInnerHTML={{ __html: hijs.highlightAuto(code.length > maxLen ? code.substr(0, maxLen) : code).value }}/>
           {code.length > maxLen && (
             <div className="more">...更多内容请下载后预览</div>
           )}

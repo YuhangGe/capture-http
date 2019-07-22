@@ -6,7 +6,6 @@ import {
 } from 'fabric';
 import HexViewer from './HexViewer';
 import Preview from './Preview';
-
 export default class Content extends React.Component {
   constructor(props) {
     super(props);
@@ -16,25 +15,31 @@ export default class Content extends React.Component {
       view: 'preview'
     };
   }
+
   componentDidMount() {
     this.props.record.on('state-changed', this._recordChangedHandler);
   }
+
   componentWillUnmount() {
     this.props.record.off('state-changed', this._recordChangedHandler);
   }
+
   _onRecordChanged() {
     this.setState({});
   }
+
   onViewTabClick(item) {
     this.setState({
       view: item.props.itemKey
     });
   }
+
   onTypeTabClick(item) {
     this.setState({
       current: item.props.itemKey
     });
   }
+
   renderPreview(r, headers) {
     if (r.preview) return r.preview;
     r.preview = (
@@ -46,6 +51,7 @@ export default class Content extends React.Component {
     );
     return r.preview;
   }
+
   render() {
     const r = this.props.record;
     const { request, response } = r;
@@ -83,7 +89,7 @@ export default class Content extends React.Component {
                 ))}
               </tbody>
             </table>
-          ): (
+          ) : (
             <p className="empty">encoded https {this.state.current}</p>
           )}
           <div className="h">Body</div>

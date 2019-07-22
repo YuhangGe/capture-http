@@ -2,6 +2,7 @@ export default class EventEmitter {
   constructor() {
     this._listeners = new Map();
   }
+
   on(eventName, handler) {
     if (!this._listeners.has(eventName)) {
       this._listeners.set(eventName, []);
@@ -12,6 +13,7 @@ export default class EventEmitter {
     }
     return this;
   }
+
   off(eventName, handler) {
     if (!this._listeners.has(eventName)) return this;
     const arr = this._listeners.get(eventName);
@@ -19,9 +21,11 @@ export default class EventEmitter {
     if (idx >= 0) arr.splice(idx, 1);
     return this;
   }
+
   removeListener(eventName, handler) {
     return this.off(eventName, handler);
   }
+
   removeAllListeners(eventName) {
     if (!eventName) {
       this._listeners.clear();
@@ -30,9 +34,11 @@ export default class EventEmitter {
     }
     return this;
   }
+
   addListener(eventName, handler) {
     return this.on(eventName, handler);
   }
+
   emit(eventName, ...args) {
     if (!this._listeners.has(eventName)) return;
     this._listeners.get(eventName).forEach(handler => {
