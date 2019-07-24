@@ -1,11 +1,22 @@
 const pki = require('node-forge/lib/pki');
 const sha256 = require('node-forge/lib/sha256');
+const futil = require('node-forge/lib/util');
+const frandom = require('node-forge/lib/random');
+
+function toPositiveHex(hexString) {
+  let mostSiginficativeHexAsInt = parseInt(hexString[0], 16);
+  if (mostSiginficativeHexAsInt < 8) {
+    return hexString;
+  }
+  mostSiginficativeHexAsInt -= 8;
+  return mostSiginficativeHexAsInt.toString() + hexString.substring(1);
+}
 
 export function generateCA(attrs) {
-  const keys = pki.rsa.generateKeyPair(1024);
+  const keys = pki.rsa.generateKeyPair(2048);
   const cert = pki.createCertificate();
   cert.publicKey = keys.publicKey;
-  cert.serialNumber = '10000';
+  cert.serialNumber = toPositiveHex(futil.bytesToHex(frandom.getBytesSync(9)));
   cert.validity.notBefore = new Date();
   cert.validity.notAfter = new Date();
   cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10);
@@ -56,7 +67,7 @@ export function generateCA(attrs) {
 export function generateDomainCert(domain, ca) {
   const caCert = pki.certificateFromPem(ca.certificate);
   const caKey = pki.privateKeyFromPem(ca.privateKey);
-  const keys = pki.rsa.generateKeyPair(1024);
+  const keys = pki.rsa.generateKeyPair(2048);
   const csr = pki.createCertificationRequest();
   csr.publicKey = keys.publicKey;
   csr.setSubject([{
@@ -84,7 +95,7 @@ export function generateDomainCert(domain, ca) {
   console.log('Certification request (CSR) created.');
 
   const cert = pki.createCertificate();
-  cert.serialNumber = '10001';
+  cert.serialNumber = toPositiveHex(futil.bytesToHex(frandom.getBytesSync(9)));
   cert.validity.notBefore = new Date();
   cert.validity.notAfter = new Date();
   cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10);

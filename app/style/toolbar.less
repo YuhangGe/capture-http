@@ -45,6 +45,25 @@
   max-width: 80vw;
   min-width: 50vw;
 
+  .proxyList {
+    margin-bottom: 20px;
+  }
+
+  .proxyList > li {
+    display: flex;
+    align-items: center;
+
+    &:not(:last-child) {
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgb(243, 242, 241);
+      margin-bottom: 6px;
+    }
+
+    > div:first-child {
+      flex: 1;
+    }
+  }
+
   .outer {
     height: 240px;
     overflow-y: auto;
@@ -52,6 +71,20 @@
 
   .form {
     margin-top: 10px;
+
+    .url-map-target {
+      display: flex;
+      align-items: center;
+
+      > span:first-child {
+        margin-right: 2px;
+      }
+
+      > .ms-TextField {
+        flex: 1;
+        margin-bottom: 0;
+      }
+    }
 
     .ms-TextField,
     .ms-MessageBar {

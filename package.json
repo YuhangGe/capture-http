@@ -2,7 +2,7 @@
   "name": "capture-http",
   "productName": "Capture HTTP(s)",
   "version": "1.0.0",
-  "description": "A simple HTTP(s) traffic capture tool",
+  "description": "A lightweight HTTP(s) traffic capture tool",
   "main": "./app/main.js",
   "scripts": {
     "start": "npm run dev",

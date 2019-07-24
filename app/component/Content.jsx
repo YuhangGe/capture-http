@@ -70,9 +70,9 @@ export default class Content extends React.Component {
             linkFormat={ PivotLinkFormat.tabs }
             linkSize={ PivotLinkSize.normal }
           >
-            <PivotItem itemKey='request' linkText='Request'>
+            <PivotItem itemKey='request' headerText='Request'>
             </PivotItem>
-            <PivotItem itemKey='response' linkText='Response'>
+            <PivotItem itemKey='response' headerText='Response'>
             </PivotItem>
           </Pivot>
         </div>
@@ -99,9 +99,9 @@ export default class Content extends React.Component {
                 selectedKey={this.state.view}
                 onLinkClick={this.onViewTabClick.bind(this)}
               >
-                <PivotItem itemKey='preview' linkText='preview'>
+                <PivotItem itemKey='preview' headerText='preview'>
                 </PivotItem>
-                <PivotItem itemKey='source' linkText='source'>
+                <PivotItem itemKey='source' headerText='source'>
                 </PivotItem>
               </Pivot>
               {this.state.view === 'preview' ? (

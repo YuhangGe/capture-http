@@ -83,7 +83,7 @@ export default class Toolbar extends React.Component {
     }
   }
 
-  onFilterChanged(prop, val) {
+  onFilterChanged(prop, ev, val) {
     const filter = this.state.filter;
     filter[prop] = val.key || val;
     this.setState({
@@ -128,6 +128,12 @@ export default class Toolbar extends React.Component {
           selectedKey={filter.method}
           onChange={this.onFilterChanged.bind(this, 'method')}
           options={METHODS}
+        />
+        <TextField
+          placeholder="Domain Filter"
+          className="i-url"
+          value={filter.domain}
+          onChange={this.onFilterChanged.bind(this, 'domain')}
         />
         <TextField
           placeholder='URL Filter'

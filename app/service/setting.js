@@ -3,14 +3,13 @@ import {
   generateCA,
   generateDomainCert
 } from './cert';
-import HTTPSManager from './https_manager';
 
 const path = require('path');
 const fs = require('fs');
 const isDevMode = process.env.NODE_ENV === 'development';
 const electron = require('electron');
 const dataRoot = isDevMode ? path.join(process.cwd(), 'data') : (electron.app || electron.remote.app).getPath('userData');
-const certsRoot = path.join(dataRoot, 'certs');
+export const certsRoot = path.join(dataRoot, 'certs');
 
 function stat(fileOrDir) {
   try {
@@ -52,8 +51,8 @@ class SettingManager extends EventEmitter {
 
   get ca() {
     if (!this._ca) {
-      const certFile = path.join(dataRoot, 'ca.cert.pem');
-      const keyFile = path.join(dataRoot, 'ca.key.pem');
+      const certFile = path.join(certsRoot, 'ca.cert.pem');
+      const keyFile = path.join(certsRoot, 'ca.key.pem');
       const certSt = stat(certFile);
       const keySt = stat(keyFile);
       if (!certSt || !keySt) return null;
@@ -85,7 +84,7 @@ class SettingManager extends EventEmitter {
     try {
       this._hosts = JSON.parse(fs.readFileSync(file, 'utf-8'));
       if (!Array.isArray(this._hosts)) return _nh();
-      else return this._hosts;
+      return this._hosts;
     } catch (ex) {
       console.error(ex);
       return _nh();
@@ -93,15 +92,14 @@ class SettingManager extends EventEmitter {
   }
 
   addHost(host) {
+    const name = host.rootDomain.substring(2);
     try {
-      const pem = generateDomainCert(host.domain, this._ca);
-      const name = host.domain.substring(2);
-      fs.writeFileSync(path.join(certsRoot, name + '.cert.pem'), pem.certificate);
-      fs.writeFileSync(path.join(certsRoot, name + '.key.pem'), pem.privateKey);
-      fs.writeFileSync(path.join(certsRoot, name + '.key.pub.pem'), pem.publicKey);
-      host.privateKey = pem.privateKey;
-      host.publicKey = pem.publicKey;
-      host.certificate = pem.certificate;
+      if (!this._hosts.find(h => h.rootDomain === host.rootDomain)) {
+        const pem = generateDomainCert(host.rootDomain, this._ca);
+        fs.writeFileSync(path.join(certsRoot, name + '.cert.pem'), pem.certificate);
+        fs.writeFileSync(path.join(certsRoot, name + '.key.pem'), pem.privateKey);
+        fs.writeFileSync(path.join(certsRoot, name + '.key.pub.pem'), pem.publicKey);
+      }
     } catch (ex) {
       console.error(ex);
       return false;
@@ -114,14 +112,6 @@ class SettingManager extends EventEmitter {
   rmHost(host) {
     const idx = this._hosts.indexOf(host);
     idx >= 0 && this._hosts.splice(idx, 1);
-    try {
-      const name = host.domain.substring(2);
-      fs.unlinkSync(path.join(certsRoot, name + '.cert.pem'));
-      fs.unlinkSync(path.join(certsRoot, name + '.key.pem'));
-      fs.unlinkSync(path.join(certsRoot, name + '.key.pub.pem'));
-    } catch (ex) {
-      console.error(ex);
-    }
     this._writeHosts();
   }
 
@@ -187,9 +177,9 @@ class SettingManager extends EventEmitter {
     return new Promise((resolve, reject) => {
       try {
         const pem = generateCA(attrs);
-        fs.writeFileSync(path.join(dataRoot, 'ca.cert.pem'), pem.certificate);
-        fs.writeFileSync(path.join(dataRoot, 'ca.key.pem'), pem.privateKey);
-        fs.writeFileSync(path.join(dataRoot, 'ca.key.pub.pem'), pem.publicKey);
+        fs.writeFileSync(path.join(certsRoot, 'ca.cert.pem'), pem.certificate);
+        fs.writeFileSync(path.join(certsRoot, 'ca.key.pem'), pem.privateKey);
+        fs.writeFileSync(path.join(certsRoot, 'ca.key.pub.pem'), pem.publicKey);
         this._ca = {
           mtime: new Date(),
           certificate: pem.certificate,
@@ -205,7 +195,4 @@ class SettingManager extends EventEmitter {
 }
 
 // singleton
-const sm = new SettingManager();
-HTTPSManager.registerSettingManager(sm);
-
-export default sm;
+export const manager = new SettingManager();

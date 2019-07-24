@@ -15,12 +15,13 @@ let mainWindow = null;
 
 function createWindow() {
   // Create the browser window.
+  const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize;
   mainWindow = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true
     },
-    width: 1000,
-    height: 700
+    width: width * 0.7 | 0,
+    height: height * 0.8 | 0
   });
 
   // and load the index.html of the app.
@@ -30,9 +31,6 @@ function createWindow() {
     slashes: true,
     icon: path.join(__dirname, isDevMode ? '../assets' : 'assets', 'icons/png/64x64.png')
   }));
-
-  // Open the DevTools.
-  //
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {
@@ -60,35 +58,42 @@ function initialize() {
 function createMenu() {
   // In this file you can include the rest of your app's specific main process
   // code. You can also put them in separate files and require them here.
-  const template = [
-    {
-      role: 'window',
-      submenu: [
-        { role: 'minimize' },
-        { role: 'close' }
-      ]
-    },
-    {
-      label: 'Edit',
-      submenu: [
-        { label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:' },
-        { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:' },
-        { type: 'separator' },
-        { label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:' },
-        { label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:' },
-        { label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:' },
-        { label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' }
-      ]
-    }
-  ];
+  const template = [];
 
   if (process.platform === 'darwin') {
     template.unshift({
       label: app.getName(),
       submenu: [
-        { role: 'toggledevtools' },
         { role: 'quit' }
       ]
+    }, {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'pasteandmatchstyle' },
+        { role: 'delete' },
+        { role: 'selectall' }
+      ]
+    });
+  }
+
+  if (isDevMode) {
+    template.push({
+      label: 'Development',
+      submenu: [{
+        role: 'toggledevtools'
+      }, {
+        label: 'Reload',
+        accelerator: 'CmdOrCtrl+R',
+        click() {
+          mainWindow.reload();
+        }
+      }]
     });
   }
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));

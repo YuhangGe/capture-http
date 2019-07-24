@@ -1,7 +1,9 @@
 import React from 'react';
 import QRCode from 'qrcode';
 import proxyServer from '../service/proxy_server';
-import settingManager from '../service/setting_manager';
+import {
+  manager as settingManager
+} from '../service/setting';
 const ip = require('ip');
 export default class Info extends React.Component {
   constructor(props) {

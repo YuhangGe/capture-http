@@ -13,23 +13,16 @@ import {
 } from 'fabric';
 import message from 'notify';
 import moment from 'moment';
-import settingManager from '../service/setting_manager';
+import {
+  manager as settingManager
+} from '../service/setting';
 import find from 'lodash-es/find';
-const fs = require('fs');
-function exists(file) {
-  try {
-    fs.accessSync(file);
-    return true;
-  } catch (ex) {
-    return false;
-  }
-}
 
 export default class Setting extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      curTab: settingManager.ca ? 'host' : 'ca',
+      curTab: 'url', // settingManager.ca ? 'host' : 'ca',
       newHost: false,
       newProxy: false,
       _caing: false,
@@ -55,19 +48,19 @@ export default class Setting extends React.Component {
     this.setState({ curTab: item.props.itemKey });
   }
 
-  _onCAFormInput(prop, val) {
+  _onCAFormInput(prop, ev, val) {
     const { caForm } = this.state;
     caForm[prop] = val;
     this.setState({ caForm });
   }
 
-  _onProxyFormInput(prop, val) {
+  _onProxyFormInput(prop, ev, val) {
     const { proxyForm } = this.state;
     proxyForm[prop] = val;
     this.setState({ proxyForm });
   }
 
-  _onHostFormInput(prop, val) {
+  _onHostFormInput(prop, ev, val) {
     const { hostForm } = this.state;
     hostForm[prop] = val;
     this.setState({ hostForm });
@@ -79,7 +72,7 @@ export default class Setting extends React.Component {
     if (!url) {
       return message.error('URL 不能为空');
     }
-    if (!/^http(s?):\/\/$/.test(url)) {
+    if (!/^http(?:s?):\/\//.test(url)) {
       return message.error('URL 格式错误，必须是完整的 URL');
     }
     if (find(settingManager.proxies, h => h.url === url)) {
@@ -87,10 +80,10 @@ export default class Setting extends React.Component {
     }
     const target = proxyForm.target.trim();
     if (!target) {
-      return message.error('目标文件路径不能为空。');
+      return message.error('目标路径不能为空。');
     }
-    if (!exists(target)) {
-      return message.error('目录文件不存在或没有权限访问。');
+    if (!/^file:\/\//.test(target)) {
+      return message.error('目标路径格式错误，当前版本只支持映射本地文件。');
     }
     settingManager.addProxy({
       url,
@@ -104,19 +97,20 @@ export default class Setting extends React.Component {
 
   _addHost() {
     const { hostForm } = this.state;
-    let domain = hostForm.domain.trim();
+    const domain = hostForm.domain.trim();
     if (!domain) {
       return message.error('域名不能为空');
     }
-    // if (!/^[^.]+\.[^.]+$/.test(domain)) {
-    //   return message.error('域名格式错误，只需要输入根域名');
-    // }
-    domain = '*.' + domain;
     if (find(settingManager.hosts, h => h.domain === domain)) {
       return message.error('域名已经存在');
     }
+    const m = domain.match(/[^.]+\.[^.]+$/);
+    if (!m) {
+      return message.error('域名格式不正确！');
+    }
     if (!settingManager.addHost({
-      domain: domain,
+      domain,
+      rootDomain: '*.' + m[0],
       enabled: true
     })) {
       return message.error('添加失败');
@@ -158,6 +152,11 @@ export default class Setting extends React.Component {
       });
   }
 
+  _rmProxy(proxy) {
+    settingManager.rmProxy(proxy);
+    this.setState({});
+  }
+
   _rmHost(host) {
     settingManager.rmHost(host);
     this.setState({});
@@ -177,32 +176,32 @@ export default class Setting extends React.Component {
         <MessageBar>以下表单内容用于生成 CA 证书，可直接使用默认值</MessageBar>
         <TextField
           value={caForm.country}
-          onChanged={this._onCAFormInput.bind(this, 'country')}
+          onChange={this._onCAFormInput.bind(this, 'country')}
           placeholder="Country Name (2 letter code), default: CN"
         />
         <TextField
           value={caForm.state}
-          onChanged={this._onCAFormInput.bind(this, 'state')}
+          onChange={this._onCAFormInput.bind(this, 'state')}
           placeholder="State or Province Name (full name), default: SiChuan"
         />
         <TextField
           value={caForm.city}
-          onChanged={this._onCAFormInput.bind(this, 'city')}
+          onChange={this._onCAFormInput.bind(this, 'city')}
           placeholder="Locality Name (eg, city), default: Chengdu"
         />
         <TextField
           value={caForm.org}
-          onChanged={this._onCAFormInput.bind(this, 'org')}
+          onChange={this._onCAFormInput.bind(this, 'org')}
           placeholder="Organization Name (eg, company), default: Capture HTTP(s) Ltd"
         />
         <TextField
           value={caForm.orgUnit}
-          onChanged={this._onCAFormInput.bind(this, 'orgUnit')}
+          onChange={this._onCAFormInput.bind(this, 'orgUnit')}
           placeholder="Organizational Unit Name (eg, section), default: capture"
         />
         <TextField
           value={caForm.commonName}
-          onChanged={this._onCAFormInput.bind(this, 'commonName')}
+          onChange={this._onCAFormInput.bind(this, 'commonName')}
           placeholder="Common Name, default: Capture HTTP(s) Root CA"
         />
         <div className="ctrl">
@@ -230,12 +229,12 @@ export default class Setting extends React.Component {
     if (!ca) return <div>还未生成 CA 证书，请先配置 CA 证书</div>;
     return this.state.newHost ? (
       <div className="form">
-        <MessageBar>请添加根域名，其下所有域名都生效</MessageBar>
+        <MessageBar>添加待解码 HTTPS 的域名，需要完整形式</MessageBar>
         <div className="outer">
           <TextField
             value={ hostForm.domain }
-            onChanged={this._onHostFormInput.bind(this, 'domain')}
-            placeholder="Domain, eg. google.com"
+            onChange={this._onHostFormInput.bind(this, 'domain')}
+            placeholder="Domain, eg. www.baidu.com"
           />
         </div>
         <div className="ctrl">
@@ -306,23 +305,24 @@ export default class Setting extends React.Component {
     const { proxies } = settingManager;
     const { proxyForm } = this.state;
     return this.state.newProxy ? (
-      <div>
+      <div className="form">
         <MessageBar>
-          添加 URL 转发规则，当前版本只支持本地文件。<br/>
-          Todo 1：文件可通过打开文件或拖拽配置。<br/>
-          Todo 2：支持将 URL 转发到其它 HTTP(s) 服务器。
+          添加 URL 映射规则，当前版只支持本地文件 <code>file://...</code>
         </MessageBar>
         <div className="outer">
           <TextField
             value={ proxyForm.url }
-            onChanged={this._onProxyFormInput.bind(this, 'url')}
-            placeholder="代理 URL"
+            onChange={this._onProxyFormInput.bind(this, 'url')}
+            placeholder="URL"
           />
-          <TextField
-            value={ proxyForm.target }
-            onChanged={this._onProxyFormInput.bind(this, 'target')}
-            placeholder="目标文件路径"
-          />
+          <div className="url-map-target">
+            <span>==></span>
+            <TextField
+              value={ proxyForm.target }
+              onChange={this._onProxyFormInput.bind(this, 'target')}
+              placeholder="Target"
+            />
+          </div>
         </div>
         <div className="ctrl">
           <DefaultButton
@@ -340,19 +340,30 @@ export default class Setting extends React.Component {
       </div>
     ) : (
       <div className="form">
-        <MessageBar>URL 代理规则列表：</MessageBar>
+        <MessageBar>URL 映射列表：</MessageBar>
         <ul className="proxyList">
           {proxies.map((proxy, idx) => (
             <li key={idx}>
-              <div>{proxy.url}</div>
-              <div>{proxy.target}</div>
               <div>
-                <IconButton
-                  className="ms-fontColor-themePrimary"
-                  onClick={this._rmProxy.bind(this, proxy)}
-                  iconProps={{ iconName: 'Delete' }}
+                <TextField
+                  value={ proxy.url }
+                  readOnly
+                  placeholder="URL"
                 />
+                <div className="url-map-target">
+                  <span>==></span>
+                  <TextField
+                    value={ proxy.target }
+                    readOnly
+                    placeholder="Target"
+                  />
+                </div>
               </div>
+              <IconButton
+                className="ms-fontColor-themePrimary"
+                onClick={this._rmProxy.bind(this, proxy)}
+                iconProps={{ iconName: 'Delete' }}
+              />
             </li>
           ))}
         </ul>
@@ -377,9 +388,9 @@ export default class Setting extends React.Component {
           selectedKey={curTab}
           onLinkClick={this.onTabClick.bind(this)}
         >
-          <PivotItem linkText="HTTPS 域名" itemKey="host" />
-          <PivotItem linkText="CA 证书" itemKey="ca" />
-          <PivotItem linkText="URL 代理" itemKey="url" />
+          <PivotItem headerText="HTTPS 域名" itemKey="host" />
+          <PivotItem headerText="CA 证书" itemKey="ca" />
+          <PivotItem headerText="URL 映射" itemKey="url" />
         </Pivot>
         {curTab === 'ca' && this.renderCA()}
         {curTab === 'host' && this.renderHost()}
