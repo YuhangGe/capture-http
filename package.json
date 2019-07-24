@@ -33,7 +33,7 @@
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-node": "^9.1.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-react": "^7.14.2",
+    "eslint-plugin-react": "^7.14.3",
     "eslint-plugin-standard": "^4.0.0",
     "less": "^3.9.0",
     "less-plugin-clean-css": "^1.5.1",
@@ -50,7 +50,7 @@
     "ws": "^7.1.1"
   },
   "dependencies": {
-    "electron": "^5.0.7",
+    "electron": "^5.0.8",
     "find-free-port": "^2.0.0",
     "highlight.js": "^9.15.8",
     "ip": "^1.1.5",
@@ -58,7 +58,7 @@
     "lodash-es": "^4.17.15",
     "moment": "^2.24.0",
     "node-forge": "^0.8.5",
-    "office-ui-fabric-react": "^7.12.0",
+    "office-ui-fabric-react": "^7.14.1",
     "pure-notify": "^1.0.3",
     "qrcode": "^1.4.1",
     "react": "^16.8.6",

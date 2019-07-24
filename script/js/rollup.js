@@ -54,7 +54,7 @@ module.exports = async function compile() {
   }
 
   await _util.mkdir(path.join(config.root, 'dist', 'js'));
-  let gCode = await _util.readFile(rollupConfig.file, 'utf-8');
+  let gCode = await _util.readFile(rollupConfig.output.file, 'utf-8');
   if (!config.noCompress) {
     console.log('Start uglify compressing...');
     const result = uglify.minify(gCode);
