@@ -52,7 +52,7 @@
   "dependencies": {
     "electron": "^5.0.8",
     "find-free-port": "^2.0.0",
-    "highlight.js": "^9.15.8",
+    "highlight.js": "^10.1.2",
     "ip": "^1.1.5",
     "jshexgrid": "0.0.1",
     "lodash-es": "^4.17.15",
